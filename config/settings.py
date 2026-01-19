@@ -8,28 +8,44 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# ✅ Cargar variables del archivo .env (si existe local)
+# ✅ Cargar variables del archivo .env (solo local)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ✅ SECRET KEY
-SECRET_KEY = os.getenv(
+SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-i5%#q45(&lrdi0@=2n^o_3@nyjwq*d+@&4jx+pi7w-#1v2zajt"
 )
 
 # ✅ DEBUG (en Render debe ser False)
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# Acepta: "1", "true", "True", "TRUE"
+DEBUG = os.environ.get("DEBUG", "0").lower() in ("1", "true", "yes")
 
-# ✅ HOSTS permitidos (Render)
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+# ✅ Render hostname automático (para ALLOWED_HOSTS)
+RENDER_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
-# ✅ Para evitar el error 400 por CSRF en Render (admin/login/post)
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
-]
+# ✅ ALLOWED_HOSTS
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
+# Si Render te da hostname, lo añadimos
+if RENDER_HOST:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+
+# Si no hay nada, por seguridad deja vacío o localhost en dev
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+# ✅ CSRF para Render
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_HOST:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOST}")
+
+# ==========================================================
+# ✅ Apps
+# ==========================================================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,6 +56,9 @@ INSTALLED_APPS = [
     "cv",
 ]
 
+# ==========================================================
+# ✅ Middleware
+# ==========================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ WhiteNoise
@@ -71,15 +90,26 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # ==========================================================
-# ✅ DATABASE (Render usa DATABASE_URL)
+# ✅ DATABASE (Postgres en Render)
 # ==========================================================
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    # ✅ Si no hay DATABASE_URL, usa SQLite (para que NO reviente y de 500)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
 
 # ==========================================================
 # ✅ Password validation
@@ -103,10 +133,10 @@ USE_TZ = True
 # ✅ Static & Media
 # ==========================================================
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = BASE_DIR / "media"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
