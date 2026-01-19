@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Hoja de Vida</title>
+
+  <!-- ✅ Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- ✅ COLUMNA IZQUIERDA: Selector -->
+    <div class="col-12 col-md-4 col-lg-3">
+      <div class="card shadow-sm p-3 sticky-top" style="top: 20px;">
+        <h5 class="mb-3">✅ Secciones</h5>
+
+        <!-- ✅ FORM -->
+        <form id="selectorForm">
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="experiencia" checked>
+            <label class="form-check-label">Experiencia Laboral</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="cursos" checked>
+            <label class="form-check-label">Cursos realizados</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked>
+            <label class="form-check-label">Reconocimientos</label>
+          </div>
+
+          <hr>
+
+          <!-- ✅ NUEVAS SECCIONES -->
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="prod_academicos" checked>
+            <label class="form-check-label">Productos académicos</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="prod_laborales" checked>
+            <label class="form-check-label">Productos laborales</label>
+          </div>
+
+          <button type="button" class="btn btn-primary w-100 mt-3" onclick="generarPDF()">
+            📄 Generar PDF con lo seleccionado
+          </button>
+        </form>
+
+        <!-- ✅ VENTA DE GARAGE (CATÁLOGO BONITO EN GRID) -->
+        <div class="card shadow-sm p-3 mt-3">
+          <h6 class="fw-bold mb-3">🛒 Venta de garage</h6>
+
+          {% if garage %}
+            <div class="row g-2">
+              {% for g in garage %}
+                <div class="col-12">
+                  <div class="border rounded p-2 bg-light">
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                      <b style="font-size: 14px;">{{ g.nombreproducto }}</b>
+                      <span class="badge bg-success">${{ g.valordelbien }}</span>
+                    </div>
+
+                    <small class="text-muted">{{ g.estadoproducto }}</small>
+
+                    <p class="mb-2 mt-1" style="font-size: 13px;">
+                      {{ g.descripcion }}
+                    </p>
+
+                    <!-- ✅ Botón comprar -->
+                    <a href="https://wa.me/593978716097?text=Hola%20quiero%20comprar%20el%20producto:%20{{ g.nombreproducto }}%20por%20${{ g.valordelbien }}"
+                       target="_blank"
+                       class="btn btn-sm btn-primary w-100">
+                      🛒 Comprar / Contactar
+                    </a>
+
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted" style="font-size: 13px;">No hay productos disponibles.</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ✅ COLUMNA DERECHA: Hoja de Vida -->
+    <div class="col-12 col-md-8 col-lg-9">
+      <div class="card shadow p-4" style="max-width: 900px; margin-left: auto;">
+
+        <h2 class="mb-0">Mi Hoja de Vida</h2>
+        <hr>
+
+        {% if perfil %}
+
+          <!-- ✅ Encabezado con foto -->
+          <div class="d-flex align-items-center gap-3">
+            {% if perfil.fotoperfil %}
+              <img src="{{ perfil.fotoperfil.url }}"
+                   width="110" height="110"
+                   style="object-fit:cover; border-radius:12px;">
+            {% endif %}
+
+            <div>
+              <h3 class="mb-1">{{ perfil.nombres }} {{ perfil.apellidos }}</h3>
+              <p class="text-muted mb-0">{{ perfil.descripcionperfil }}</p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- ✅ DATOS PERSONALES -->
+          <div id="datos">
+            <h4 class="mt-2">📌 Datos Personales</h4>
+            <ul>
+              <li><b>Cédula:</b> {{ perfil.numerocedula }}</li>
+              <li><b>Nacionalidad:</b> {{ perfil.nacionalidad }}</li>
+              <li><b>Dirección:</b> {{ perfil.direcciondomiciliaria }}</li>
+            </ul>
+          </div>
+
+          <!-- ✅ EXPERIENCIA -->
+          <div id="experiencia">
+            <h4 class="mt-4">💼 Experiencia Laboral</h4>
+
+            {% if experiencia %}
+              {% for e in experiencia %}
+                <div class="border rounded p-3 mb-2 bg-white">
+                  <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
+                  <p class="mb-0">{{ e.descripcionfunciones }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="border rounded p-3 mb-2 bg-white">
+                <b class="text-muted">📌 No hay experiencia registrada.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ CURSOS -->
+          <div id="cursos">
+            <h4 class="mt-4">📚 Cursos realizados</h4>
+
+            {% if cursos %}
+              {% for c in cursos %}
+                <div class="border rounded p-3 mb-2 bg-white">
+                  <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
+                  <p class="mb-1">{{ c.descripcioncurso }}</p>
+
+                  {% if c.rutacertificado %}
+                    <a href="{{ c.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-success">
+                      📄 Ver certificado
+                    </a>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="border rounded p-3 mb-2 bg-white">
+                <b class="text-muted">📌 No hay cursos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ RECONOCIMIENTOS -->
+          <div id="reconocimientos">
+            <h4 class="mt-4">🏆 Reconocimientos</h4>
+
+            {% if reconocimientos %}
+              {% for r in reconocimientos %}
+                <div class="border rounded p-3 mb-2 bg-white">
+                  <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
+                  <p class="mb-1">{{ r.entidadpatrocinadora }}</p>
+
+                  {% if r.rutacertificado %}
+                    <a href="{{ r.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-primary">
+                      🏅 Ver reconocimiento
+                    </a>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="border rounded p-3 mb-2 bg-white">
+                <b class="text-muted">📌 No hay reconocimientos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ PRODUCTOS ACADÉMICOS -->
+          <div id="prod_academicos">
+            <h4 class="mt-4">🎓 Productos académicos</h4>
+
+            {% if productos_academicos %}
+              {% for p in productos_academicos %}
+                <div class="border rounded p-3 mb-2 bg-white">
+                  <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
+                  <p class="mb-0">{{ p.descripcion }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="border rounded p-3 mb-2 bg-white">
+                <b class="text-muted">📌 No hay productos académicos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ PRODUCTOS LABORALES -->
+          <div id="prod_laborales">
+            <h4 class="mt-4">💼 Productos laborales</h4>
+
+            {% if productos_laborales %}
+              {% for p in productos_laborales %}
+                <div class="border rounded p-3 mb-2 bg-white">
+                  <b>{{ p.nombreproducto }}</b>
+                  <p class="mb-1">
+                    <small class="text-muted">{{ p.fechaproducto }}</small>
+                  </p>
+                  <p class="mb-0">{{ p.descripcion }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="border rounded p-3 mb-2 bg-white">
+                <b class="text-muted">📌 No hay productos laborales registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+        {% else %}
+          <p class="text-danger">No hay datos cargados en DATOSPERSONALES 😢</p>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ✅ Script mostrar/ocultar -->
+<script>
+  document.querySelectorAll(".sec").forEach(chk => {
+    chk.addEventListener("change", () => {
+      const seccion = document.getElementById(chk.value);
+      if (seccion) {
+        seccion.style.display = chk.checked ? "block" : "none";
+      }
+    });
+  });
+
+  function generarPDF(){
+    let seleccionadas = ["sec=datos"];
+
+    document.querySelectorAll(".sec:checked").forEach(chk => {
+      seleccionadas.push("sec=" + chk.value);
+    });
+
+    window.open("/pdf/?" + seleccionadas.join("&"), "_blank");
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+# =========================
+# DJANGO
+# =========================
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+
+# =========================
+# VIRTUAL ENV (NO SUBIR)
+# =========================
+venv/
+env/
+.venv/
+
+# =========================
+# MIGRATIONS (SI SE SUBEN ✅)
+# migrations/   <-- NO lo ignores
+
+# =========================
+# MEDIA / ARCHIVOS SUBIDOS
+# (en Render se recomienda usar storage, pero por ahora NO subas estos)
+# =========================
+media/
+*.jpg
+*.png
+*.jpeg
+*.gif
+*.pdf
+
+# =========================
+# STATICFILES (si los generas)
+# =========================
+staticfiles/
+static/
+
+# =========================
+# VS CODE / WINDOWS
+# =========================
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# ENV VARIABLES
+# =========================
+.env

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; font-size: 12px; }
+    h2 { margin-bottom: 0; }
+    .caja { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+{% if perfil %}
+  <h2>{{ perfil.nombres }} {{ perfil.apellidos }}</h2>
+  <p>{{ perfil.descripcionperfil }}</p>
+  <hr>
+
+  {% if "datos" in secciones %}
+  <h3>📌 Datos Personales</h3>
+  <div class="caja">
+    <p><b>Cédula:</b> {{ perfil.numerocedula }}</p>
+    <p><b>Nacionalidad:</b> {{ perfil.nacionalidad }}</p>
+    <p><b>Dirección:</b> {{ perfil.direcciondomiciliaria }}</p>
+  </div>
+  {% endif %}
+
+  {% if "experiencia" in secciones %}
+  <h3>💼 Experiencia Laboral</h3>
+  {% for e in experiencia %}
+    <div class="caja">
+      <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
+      <p>{{ e.descripcionfunciones }}</p>
+    </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if "cursos" in secciones %}
+  <h3>📚 Cursos Realizados</h3>
+  {% for c in cursos %}
+    <div class="caja">
+      <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
+      <p>{{ c.descripcioncurso }}</p>
+    </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if "reconocimientos" in secciones %}
+  <h3>🏆 Reconocimientos</h3>
+  {% for r in reconocimientos %}
+    <div class="caja">
+      <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
+      <p>{{ r.entidadpatrocinadora }}</p>
+    </div>
+  {% endfor %}
+  {% endif %}
+
+{% else %}
+  <p>No hay perfil activo.</p>
+{% endif %}
+
+</body>
+</html>
