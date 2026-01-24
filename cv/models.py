@@ -4,6 +4,9 @@ from django.utils import timezone
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db.models import Q, F
 
+# ✅ IMPORTANTE para Cloudinary (PDF = RAW)
+from cloudinary_storage.storage import MediaCloudinaryStorage, RawMediaCloudinaryStorage
+
 
 # ===============================
 # ✅ VALIDADORES REUSABLES
@@ -106,8 +109,13 @@ class DatosPersonales(ValidatedModel):
 
     sitioweb = models.URLField(max_length=200, blank=True, null=True)
 
-    # ✅ FOTO PERFIL (Cloudinary)
-    fotoperfil = models.ImageField(upload_to="fotos/", blank=True, null=True)
+    # ✅ FOTO PERFIL (IMAGEN) -> MEDIA
+    fotoperfil = models.ImageField(
+        upload_to="fotos/",
+        blank=True,
+        null=True,
+        storage=MediaCloudinaryStorage()
+    )
 
     class Meta:
         db_table = "datospersonales"
@@ -150,10 +158,12 @@ class ExperienciaLaboral(ValidatedModel):
     descripcionfunciones = models.CharField(max_length=100)
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
+    # ✅ PDF/ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="certificados/experiencia/",
         blank=True,
-        null=True
+        null=True,
+        storage=RawMediaCloudinaryStorage()
     )
 
     def clean(self):
@@ -211,7 +221,14 @@ class CursosRealizados(ValidatedModel):
     emailempresapatrocinadora = models.EmailField(max_length=100, blank=True, null=True)
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
-    rutacertificado = models.FileField(upload_to="certificados/cursos/", blank=True, null=True)
+
+    # ✅ PDF/ARCHIVO -> RAW
+    rutacertificado = models.FileField(
+        upload_to="certificados/cursos/",
+        blank=True,
+        null=True,
+        storage=RawMediaCloudinaryStorage()
+    )
 
     def clean(self):
         if self.fechafin and self.fechainicio and self.fechafin < self.fechainicio:
@@ -258,9 +275,12 @@ class Reconocimientos(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
+    # ✅ PDF/ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="certificados/reconocimientos/",
-        blank=True, null=True
+        blank=True,
+        null=True,
+        storage=RawMediaCloudinaryStorage()
     )
 
     class Meta:
@@ -288,9 +308,12 @@ class ProductosAcademicos(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
+    # ✅ ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="productos/academicos/",
-        blank=True, null=True
+        blank=True,
+        null=True,
+        storage=RawMediaCloudinaryStorage()
     )
 
     class Meta:
@@ -318,9 +341,12 @@ class ProductosLaborales(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
+    # ✅ ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="productos/laborales/",
-        blank=True, null=True
+        blank=True,
+        null=True,
+        storage=RawMediaCloudinaryStorage()
     )
 
     class Meta:
