@@ -20,7 +20,6 @@ SECRET_KEY = os.environ.get(
 )
 
 # ✅ DEBUG (en Render debe ser False)
-# Acepta: "1", "true", "True", "TRUE"
 DEBUG = os.environ.get("DEBUG", "0").lower() in ("1", "true", "yes")
 
 # ✅ Render hostname automático (para ALLOWED_HOSTS)
@@ -34,7 +33,7 @@ ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 if RENDER_HOST:
     ALLOWED_HOSTS.append(RENDER_HOST)
 
-# Si no hay nada, por seguridad deja vacío o localhost en dev
+# Si no hay nada, por seguridad deja localhost en dev
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -53,6 +52,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # ✅ Cloudinary (para fotos/certificados en Render Free)
+    "cloudinary",
+    "cloudinary_storage",
+
     "cv",
 ]
 
@@ -95,7 +99,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    # ✅ Si no hay DATABASE_URL, usa SQLite (para que NO reviente y de 500)
+    # ✅ Si no hay DATABASE_URL, usa SQLite para desarrollo local
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -135,9 +139,32 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# ✅ Si tienes una carpeta static en tu proyecto, activa esto:
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# ✅ WhiteNoise (static files)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# ==========================================================
+# ✅ CLOUDINARY (MEDIA en Render Free)
+# ==========================================================
+# ✅ Estos valores se toman desde variables de entorno en Render:
+# CLOUDINARY_CLOUD_NAME
+# CLOUDINARY_API_KEY
+# CLOUDINARY_API_SECRET
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
+}
+
+# ✅ Guardar SUBIDAS (foto/certificados) en Cloudinary SIEMPRE
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+# ==========================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+

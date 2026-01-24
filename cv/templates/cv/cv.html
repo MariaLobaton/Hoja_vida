@@ -21,6 +21,12 @@
         <!-- ✅ FORM -->
         <form id="selectorForm">
 
+          <!-- ✅ AGREGADO: Datos personales (ANTES no existía en el selector) -->
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="datos" checked>
+            <label class="form-check-label">Datos personales</label>
+          </div>
+
           <div class="form-check">
             <input class="form-check-input sec" type="checkbox" value="experiencia" checked>
             <label class="form-check-label">Experiencia Laboral</label>
@@ -54,7 +60,7 @@
           </button>
         </form>
 
-        <!-- ✅ VENTA DE GARAGE (CATÁLOGO BONITO EN GRID) -->
+        <!-- ✅ VENTA DE GARAGE -->
         <div class="card shadow-sm p-3 mt-3">
           <h6 class="fw-bold mb-3">🛒 Venta de garage</h6>
 
@@ -63,7 +69,7 @@
               {% for g in garage %}
                 <div class="col-12">
                   <div class="border rounded p-2 bg-light">
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                       <b style="font-size: 14px;">{{ g.nombreproducto }}</b>
                       <span class="badge bg-success">${{ g.valordelbien }}</span>
@@ -75,7 +81,6 @@
                       {{ g.descripcion }}
                     </p>
 
-                    <!-- ✅ Botón comprar -->
                     <a href="https://wa.me/593978716097?text=Hola%20quiero%20comprar%20el%20producto:%20{{ g.nombreproducto }}%20por%20${{ g.valordelbien }}"
                        target="_blank"
                        class="btn btn-sm btn-primary w-100">
@@ -105,10 +110,18 @@
 
           <!-- ✅ Encabezado con foto -->
           <div class="d-flex align-items-center gap-3">
+
+            <!-- ✅ CORREGIDO: Mostrar foto con .url y con else -->
             {% if perfil.fotoperfil %}
               <img src="{{ perfil.fotoperfil.url }}"
+                   alt="Foto de perfil"
                    width="110" height="110"
                    style="object-fit:cover; border-radius:12px;">
+            {% else %}
+              <div class="border rounded d-flex align-items-center justify-content-center"
+                   style="width:110px;height:110px;">
+                <span class="text-muted" style="font-size:12px;">Sin foto</span>
+              </div>
             {% endif %}
 
             <div>
@@ -157,11 +170,14 @@
                   <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
                   <p class="mb-1">{{ c.descripcioncurso }}</p>
 
+                  <!-- ✅ CORREGIDO: usar .url -->
                   {% if c.rutacertificado %}
                     <a href="{{ c.rutacertificado.url }}" target="_blank"
                        class="btn btn-sm btn-outline-success">
                       📄 Ver certificado
                     </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
                   {% endif %}
                 </div>
               {% endfor %}
@@ -182,11 +198,14 @@
                   <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
                   <p class="mb-1">{{ r.entidadpatrocinadora }}</p>
 
+                  <!-- ✅ CORREGIDO: usar .url -->
                   {% if r.rutacertificado %}
                     <a href="{{ r.rutacertificado.url }}" target="_blank"
                        class="btn btn-sm btn-outline-primary">
                       🏅 Ver reconocimiento
                     </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin archivo</p>
                   {% endif %}
                 </div>
               {% endfor %}
@@ -209,64 +228,5 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
-                <b class="text-muted">📌 No hay productos académicos registrados.</b>
-              </div>
-            {% endif %}
-          </div>
+              <div class="border rounded p
 
-          <!-- ✅ PRODUCTOS LABORALES -->
-          <div id="prod_laborales">
-            <h4 class="mt-4">💼 Productos laborales</h4>
-
-            {% if productos_laborales %}
-              {% for p in productos_laborales %}
-                <div class="border rounded p-3 mb-2 bg-white">
-                  <b>{{ p.nombreproducto }}</b>
-                  <p class="mb-1">
-                    <small class="text-muted">{{ p.fechaproducto }}</small>
-                  </p>
-                  <p class="mb-0">{{ p.descripcion }}</p>
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
-                <b class="text-muted">📌 No hay productos laborales registrados.</b>
-              </div>
-            {% endif %}
-          </div>
-
-        {% else %}
-          <p class="text-danger">No hay datos cargados en DATOSPERSONALES 😢</p>
-        {% endif %}
-
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ✅ Script mostrar/ocultar -->
-<script>
-  document.querySelectorAll(".sec").forEach(chk => {
-    chk.addEventListener("change", () => {
-      const seccion = document.getElementById(chk.value);
-      if (seccion) {
-        seccion.style.display = chk.checked ? "block" : "none";
-      }
-    });
-  });
-
-  function generarPDF(){
-    let seleccionadas = ["sec=datos"];
-
-    document.querySelectorAll(".sec:checked").forEach(chk => {
-      seleccionadas.push("sec=" + chk.value);
-    });
-
-    window.open("/pdf/?" + seleccionadas.join("&"), "_blank");
-  }
-</script>
-
-</body>
-</html>

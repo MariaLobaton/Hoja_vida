@@ -6,6 +6,10 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.lib.utils import ImageReader
+
+from urllib.request import urlopen
+from io import BytesIO
 
 from .models import (
     DatosPersonales, ExperienciaLaboral, CursosRealizados, Reconocimientos,
@@ -52,7 +56,7 @@ def cv_view(request):
             activarparaqueseveaenfront=True
         )
 
-        # ✅ Solo mostrar lo que NO esté vendido (si existe ese estado)
+        # ✅ Solo mostrar lo que NO esté vendido
         garage = VentaGarage.objects.filter(
             perfil=perfil,
             activarparaqueseveaenfront=True
@@ -70,7 +74,7 @@ def cv_view(request):
 
 
 # ======================================================
-# ✅ PDF
+# ✅ PDF (REPORTLAB)
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
@@ -125,6 +129,24 @@ def cv_pdf(request):
     x_right = width - 2 * cm
     y = height - 2 * cm
 
+    # ======================================================
+    # ✅ FUNCIÓN PARA CARGAR FOTO DESDE URL (CLOUDINARY)
+    # ======================================================
+    def draw_image_from_url(img_url, x, y_pos, w, h):
+        """
+        ✅ Dibuja imagen desde URL (Cloudinary) en ReportLab
+        """
+        try:
+            with urlopen(img_url) as response_img:
+                image_bytes = response_img.read()
+
+            image_file = BytesIO(image_bytes)
+            img = ImageReader(image_file)
+            p.drawImage(img, x, y_pos, width=w, height=h, mask="auto")
+            return True
+        except:
+            return False
+
     # --------------------------
     # Funciones de apoyo
     # --------------------------
@@ -136,29 +158,24 @@ def cv_pdf(request):
 
     def draw_section_title(text):
         """
-        ✅ Título de sección y línea separada correctamente (NO roza el texto)
+        ✅ Título de sección y línea separada correctamente
         """
         nonlocal y
         nueva_pagina_si_es_necesario()
 
-        # Aire arriba (para que no se pegue a la tarjeta anterior)
         y -= 0.15 * cm
 
-        # ✅ Título
         p.setFillColor(colors.HexColor("#1f2937"))
         p.setFont("Helvetica-Bold", 12)
         p.drawString(x_left, y, text.upper())
 
-        # bajar un poquito para que NO roce
         y -= 0.55 * cm
 
-        # ✅ Línea abajo (NO en datos personales si no quieres)
         if text.lower() != "datos personales":
             p.setStrokeColor(colors.HexColor("#1f2937"))
             p.setLineWidth(1)
             p.line(x_left, y, x_right, y)
 
-        # bajar un poquito para empezar tarjetas/texto
         y -= 0.45 * cm
 
     def draw_wrapped_text(text, font="Helvetica", size=10, leading=16, max_width=None):
@@ -193,7 +210,7 @@ def cv_pdf(request):
             p.drawString(x_left, y, line)
             y -= leading
 
-        y -= 4  # aire
+        y -= 4
 
     def draw_card(title, subtitle=None, body=None):
         """
@@ -221,9 +238,8 @@ def cv_pdf(request):
                     linea = w
             return lineas
 
-        # ✅ altura real
         card_height = 10
-        card_height += 16  # título
+        card_height += 16
 
         if subtitle:
             card_height += 13
@@ -234,7 +250,6 @@ def cv_pdf(request):
 
         card_height += 14
 
-        # ✅ dibujar tarjeta
         p.setFillColor(colors.HexColor("#F3F4F6"))
         p.setStrokeColor(colors.HexColor("#D1D5DB"))
         p.roundRect(
@@ -292,10 +307,11 @@ def cv_pdf(request):
     foto_x = x_right - foto_size - 0.6 * cm
     foto_y = height - 5.0 * cm
 
+    # ✅ Cloudinary: usar .url (NO .path)
     if hasattr(perfil, "fotoperfil") and perfil.fotoperfil:
         try:
-            p.drawImage(perfil.fotoperfil.path, foto_x, foto_y,
-                        width=foto_size, height=foto_size, mask="auto")
+            img_url = perfil.fotoperfil.url
+            draw_image_from_url(img_url, foto_x, foto_y, foto_size, foto_size)
         except:
             pass
 
@@ -396,7 +412,7 @@ def cv_pdf(request):
             draw_card("No hay productos laborales registrados.")
 
     # --------------------------
-    # Venta de garage
+    # Venta de garage (si lo agregas en el selector)
     # --------------------------
     if "garage" in secciones:
         draw_section_title("Venta de garage")
@@ -412,4 +428,4 @@ def cv_pdf(request):
 
     p.showPage()
     p.save()
-    return response         
+    return response
