@@ -101,7 +101,7 @@ def cv_view(request):
         "experiencia": experiencia,
         "cursos": cursos,
         "reconocimientos": reconocimientos,
-        "certificados": reconocimientos,  # ✅ NUEVO: para mostrar en Secciones como lista
+        "certificados": reconocimientos,  # ✅ para mostrar en Secciones como lista
         "productos_academicos": productos_academicos,
         "productos_laborales": productos_laborales,
         "garage": garage,
@@ -113,7 +113,16 @@ def cv_view(request):
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
-    certificados_ids = request.GET.getlist("cert")  # ✅ NUEVO: ids seleccionados de certificados
+
+    # ✅ IDs seleccionados de certificados (blindado)
+    certificados_ids_raw = request.GET.getlist("cert")
+    certificados_ids = []
+    for x in certificados_ids_raw:
+        try:
+            if str(x).strip() != "":
+                certificados_ids.append(int(x))
+        except:
+            pass
 
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
@@ -171,12 +180,11 @@ def cv_pdf(request):
     y = height - 2 * cm
 
     # ======================================================
-    # ✅ FUNCIÓN PARA CARGAR FOTO DESDE URL (CLOUDINARY)
+    # ✅ FUNCIÓN PARA CARGAR IMAGEN DESDE URL (CLOUDINARY)
     # ======================================================
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
-            # ✅ timeout para evitar que Render se cuelgue
-            with urlopen(img_url, timeout=5) as response_img:
+            with urlopen(img_url, timeout=7) as response_img:
                 image_bytes = response_img.read()
 
             image_file = BytesIO(image_bytes)
@@ -186,9 +194,9 @@ def cv_pdf(request):
         except:
             return False
 
-    def nueva_pagina_si_es_necesario():
+    def nueva_pagina_si_es_necesario(min_y=3 * cm):
         nonlocal y
-        if y < 3 * cm:
+        if y < min_y:
             p.showPage()
             y = height - 2 * cm
 
@@ -380,16 +388,48 @@ def cv_pdf(request):
         else:
             draw_card("No hay cursos registrados.")
 
-    # ✅ Certificados / Reconocimientos seleccionados
+    # ✅ CERTIFICADOS: imprime el texto + la imagen si existe
     if "reconocimientos" in secciones:
         draw_section_title("Certificados / Reconocimientos")
+
         if reconocimientos:
             for r in reconocimientos:
+
                 draw_card(
                     title=f"{r.tiporeconocimiento}: {r.descripcionreconocimiento}",
                     subtitle=r.entidadpatrocinadora,
                     body=""
                 )
+
+                # ✅ si tiene archivo, intentar imprimirlo como imagen
+                if getattr(r, "rutacertificado", None):
+                    try:
+                        url_cert = r.rutacertificado.url
+
+                        # ✅ ReportLab solo imprime imágenes (NO PDF)
+                        if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+
+                            img_w = x_right - x_left
+                            img_h = 13 * cm  # tamaño grande
+
+                            # Si no hay espacio, nueva página
+                            if y < (img_h + 3 * cm):
+                                p.showPage()
+                                y = height - 2 * cm
+
+                            ok = draw_image_from_url(url_cert, x_left, y - img_h, img_w, img_h)
+
+                            if ok:
+                                y -= (img_h + 0.8 * cm)
+                            else:
+                                draw_wrapped_text("❌ No se pudo cargar la imagen del certificado.", size=9)
+
+                        else:
+                            draw_wrapped_text("📌 Certificado adjunto en PDF (no se imprime como imagen).", size=9)
+
+                    except:
+                        draw_wrapped_text("❌ Error al cargar el certificado.", size=9)
+
         else:
             draw_card("No seleccionaste certificados para imprimir.")
 
