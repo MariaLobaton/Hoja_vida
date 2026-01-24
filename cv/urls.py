@@ -1,7 +1,7 @@
 from django.urls import path
-from . import views
+from .views import cv_view, cv_pdf
 
 urlpatterns = [
-    path("", views.cv_view, name="cv"),
-    path("pdf/", views.cv_pdf, name="cv_pdf"),
+    path("", cv_view, name="cv"),
+    path("pdf/", cv_pdf, name="cv_pdf"),
 ]

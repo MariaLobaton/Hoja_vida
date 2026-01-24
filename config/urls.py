@@ -9,5 +9,6 @@ urlpatterns = [
     path("", include("cv.urls")),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+# ✅ Solo servir MEDIA en LOCAL (DEBUG=True)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
