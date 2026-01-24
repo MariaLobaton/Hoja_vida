@@ -100,7 +100,7 @@ def cv_view(request):
 
         # ======================================================
         # ✅ CERTIFICADOS UNIFICADOS para imprimir como anexos
-        # ✅ Se ordenan por fecha (de menor a mayor)
+        # ✅ Se ordenan por fecha (de MÁS ACTUAL a MÁS ANTIGUA)
         # ======================================================
 
         # ✅ Certificados de CURSOS
@@ -129,8 +129,12 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ Ordenar por fecha (None al final)
-        certificados.sort(key=lambda x: (x["fecha"] is None, x["fecha"]))
+        # ✅ ORDENAR: MÁS RECIENTE → MÁS ANTIGUO, y None al final
+        certificados_con_fecha = [x for x in certificados if x.get("fecha") is not None]
+        certificados_sin_fecha = [x for x in certificados if x.get("fecha") is None]
+
+        certificados_con_fecha.sort(key=lambda x: x["fecha"], reverse=True)
+        certificados = certificados_con_fecha + certificados_sin_fecha
 
     return render(request, "cv/cv.html", {
         "perfil": perfil,
