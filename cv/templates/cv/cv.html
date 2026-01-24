@@ -34,8 +34,26 @@
           </div>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked>
+            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked id="chkReconocimientos">
             <label class="form-check-label">Reconocimientos</label>
+          </div>
+
+          <!-- ✅ LISTA DE CERTIFICADOS INDIVIDUALES -->
+          <div id="listaCertificados" class="mt-2 p-2 border rounded bg-white">
+            <small class="text-muted d-block mb-2">📄 Selecciona los certificados a imprimir</small>
+
+            {% if certificados %}
+              {% for c in certificados %}
+                <div class="form-check">
+                  <input class="form-check-input cert" type="checkbox" value="{{ c.id }}" checked id="cert-{{ c.id }}">
+                  <label class="form-check-label" for="cert-{{ c.id }}">
+                    {{ c.tiporeconocimiento }} - {{ c.descripcionreconocimiento }}
+                  </label>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted mb-0" style="font-size: 13px;">No hay certificados registrados.</p>
+            {% endif %}
           </div>
 
           <hr>
@@ -256,6 +274,13 @@
         seccion.style.display = chk.checked ? "block" : "none";
       }
     });
+
+    // ✅ si desmarcas Reconocimientos, ocultar lista de certificados
+    const chkRec = document.getElementById("chkReconocimientos");
+    const lista = document.getElementById("listaCertificados");
+    if (chkRec && lista) {
+      lista.style.display = chkRec.checked ? "block" : "none";
+    }
   }
 
   actualizarSecciones();
@@ -265,11 +290,23 @@
   });
 
   function generarPDF(){
-    let seleccionadas = [];
+    let params = [];
+
+    // ✅ secciones seleccionadas
     document.querySelectorAll(".sec:checked").forEach(chk => {
-      seleccionadas.push("sec=" + chk.value);
+      params.push("sec=" + encodeURIComponent(chk.value));
     });
-    window.open("/pdf/?" + seleccionadas.join("&"), "_blank");
+
+    // ✅ certificados seleccionados (SOLO si reconocimientos está activo)
+    const chkRec = document.getElementById("chkReconocimientos");
+    if (chkRec && chkRec.checked) {
+      document.querySelectorAll(".cert:checked").forEach(chk => {
+        params.push("cert=" + encodeURIComponent(chk.value));
+      });
+    }
+
+    // ✅ abre el PDF
+    window.open("{% url 'cv_pdf' %}?" + params.join("&"), "_blank");
   }
 </script>
 

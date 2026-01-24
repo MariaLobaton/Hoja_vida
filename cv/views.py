@@ -31,8 +31,6 @@ def editar_perfil(request):
 
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
-    # ✅ Si existe perfil, se edita (instance=perfil)
-    # ✅ Si NO existe perfil, se crea (instance=None)
     if request.method == "POST":
         form = DatosPersonalesForm(request.POST, request.FILES, instance=perfil)
 
@@ -103,6 +101,7 @@ def cv_view(request):
         "experiencia": experiencia,
         "cursos": cursos,
         "reconocimientos": reconocimientos,
+        "certificados": reconocimientos,  # ✅ NUEVO: para mostrar en Secciones como lista
         "productos_academicos": productos_academicos,
         "productos_laborales": productos_laborales,
         "garage": garage,
@@ -114,6 +113,8 @@ def cv_view(request):
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
+    certificados_ids = request.GET.getlist("cert")  # ✅ NUEVO: ids seleccionados de certificados
+
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
     experiencia = []
@@ -134,10 +135,15 @@ def cv_pdf(request):
             activarparaqueseveaenfront=True
         )
 
-        reconocimientos = Reconocimientos.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
+        # ✅ Solo imprimir certificados seleccionados
+        if certificados_ids:
+            reconocimientos = Reconocimientos.objects.filter(
+                perfil=perfil,
+                activarparaqueseveaenfront=True,
+                id__in=certificados_ids
+            )
+        else:
+            reconocimientos = Reconocimientos.objects.none()
 
         productos_academicos = ProductosAcademicos.objects.filter(
             perfil=perfil,
@@ -374,8 +380,9 @@ def cv_pdf(request):
         else:
             draw_card("No hay cursos registrados.")
 
+    # ✅ Certificados / Reconocimientos seleccionados
     if "reconocimientos" in secciones:
-        draw_section_title("Reconocimientos")
+        draw_section_title("Certificados / Reconocimientos")
         if reconocimientos:
             for r in reconocimientos:
                 draw_card(
@@ -384,7 +391,7 @@ def cv_pdf(request):
                     body=""
                 )
         else:
-            draw_card("No hay reconocimientos registrados.")
+            draw_card("No seleccionaste certificados para imprimir.")
 
     if "prod_academicos" in secciones:
         draw_section_title("Productos académicos")
