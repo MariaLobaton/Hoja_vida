@@ -129,7 +129,11 @@ class ExperienciaLaboral(ValidatedModel):
 
     nombrecontactoempresarial = models.CharField(max_length=100, blank=True, null=True)
 
-    # ✅ SOLO 10 dígitos
+    
+    telefono_8_10_validator = RegexValidator(
+    regex=r"^\d{8}$|^\d{10}$",
+    message="El teléfono debe tener 8 o 10 dígitos numéricos."
+    )
     telefonocontactoempresarial = models.CharField(
         max_length=10,
         blank=True, null=True,
