@@ -61,8 +61,10 @@ class DatosPersonales(ValidatedModel):
 
     idperfil = models.AutoField(primary_key=True)
     descripcionperfil = models.CharField(max_length=50)
-    perfilactivo = models.IntegerField(default=1)
-
+    perfilactivo = models.IntegerField(
+    choices=[(1, "Activo"), (0, "Inactivo")],
+    default=1
+    )
     apellidos = models.CharField(max_length=60)
     nombres = models.CharField(max_length=60)
     nacionalidad = models.CharField(max_length=20)
