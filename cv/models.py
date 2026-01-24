@@ -137,7 +137,7 @@ class ExperienciaLaboral(ValidatedModel):
     telefonocontactoempresarial = models.CharField(
         max_length=10,
         blank=True, null=True,
-        validators=[telefono_validator]
+        validators=[telefono_8_10_validator]
     )
 
     # ✅ no futuras
