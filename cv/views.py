@@ -108,8 +108,9 @@ def cv_view(request):
             if getattr(c, "rutacertificado", None):
                 # orden: usa fechafin o fechainicio
                 fecha = getattr(c, "fechafin", None) or getattr(c, "fechainicio", None)
+
                 certificados.append({
-                    "value": f"CUR-{c.id}",  # ✅ token
+                    "value": f"CUR-{c.pk}",  # ✅ FIX: usar pk
                     "nombre": f"{c.nombrecurso}",
                     "tipo": "Curso",
                     "fecha": fecha
@@ -120,8 +121,9 @@ def cv_view(request):
             if getattr(r, "rutacertificado", None):
                 # si en tu modelo no existe fecha, quedará None
                 fecha = getattr(r, "fechareconocimiento", None)
+
                 certificados.append({
-                    "value": f"REC-{r.id}",  # ✅ token
+                    "value": f"REC-{r.pk}",  # ✅ FIX: usar pk
                     "nombre": f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}",
                     "tipo": "Reconocimiento",
                     "fecha": fecha
@@ -378,7 +380,7 @@ def cv_pdf(request):
 
     p.setFillColor(colors.HexColor("#4b5563"))
     p.setFont("Helvetica", 11)
-    p.drawString(x_left, y, perfil.descripcionperfil)
+    p.drawString(x_left, y, str(perfil.descripcionperfil))
     y -= 25
 
     # ======================================================
@@ -396,7 +398,7 @@ def cv_pdf(request):
             for e in experiencia:
                 draw_card(
                     title=f"{e.cargodesempenado} - {e.nombrempresa}",
-                    subtitle=e.lugarempresa,
+                    subtitle=getattr(e, "lugarempresa", ""),
                     body=e.descripcionfunciones
                 )
         else:
@@ -416,7 +418,7 @@ def cv_pdf(request):
 
     if "reconocimientos" in secciones:
         draw_section_title("Reconocimientos")
-        if reconocimientos_cv:
+        if reconocimientos_cv.exists():
             for r in reconocimientos_cv:
                 draw_card(
                     title=f"{r.tiporeconocimiento}: {r.descripcionreconocimiento}",
@@ -453,7 +455,7 @@ def cv_pdf(request):
     # ======================================================
     # ✅ ANEXOS: CADA CERTIFICADO SELECCIONADO EN HOJA NUEVA
     # ======================================================
-    if certificados_tokens:
+    if certificados_tokens and perfil:
         contador = 1
 
         for token in certificados_tokens:
@@ -472,16 +474,16 @@ def cv_pdf(request):
             nombre = ""
             url_cert = None
 
-            # ✅ CURSO
+            # ✅ CURSO (FIX: pk)
             if tipo == "CUR":
-                obj = CursosRealizados.objects.filter(id=idx, perfil=perfil).first()
+                obj = CursosRealizados.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.nombrecurso}"
                     url_cert = obj.rutacertificado.url
 
-            # ✅ RECONOCIMIENTO
+            # ✅ RECONOCIMIENTO (FIX: pk)
             elif tipo == "REC":
-                obj = Reconocimientos.objects.filter(id=idx, perfil=perfil).first()
+                obj = Reconocimientos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.tiporeconocimiento} - {obj.descripcionreconocimiento}"
                     url_cert = obj.rutacertificado.url
@@ -503,7 +505,7 @@ def cv_pdf(request):
             y_temp = height - 4.0 * cm
 
             try:
-                # ✅ SOLO SE PUEDE IMPRIMIR COMO IMAGEN (png/jpg)
+                # ✅ SOLO IMAGENES (ReportLab NO imprime PDF)
                 if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                     with urlopen(url_cert, timeout=7) as response_img:
                         image_bytes = response_img.read()
@@ -525,7 +527,6 @@ def cv_pdf(request):
                     p.drawImage(img, x_img, y_img, width=new_w, height=new_h, mask="auto")
 
                 else:
-                    # ✅ si está en PDF no puede imprimirse como imagen
                     p.setFillColor(colors.red)
                     p.setFont("Helvetica-Bold", 11)
                     p.drawString(x_left, y_temp, "⚠️ Este certificado está en PDF y no se puede imprimir como imagen.")
