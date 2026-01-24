@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db.models import Q, F
 
+
 # ===============================
 # ✅ VALIDADORES REUSABLES
 # ===============================
@@ -28,9 +29,12 @@ telefono_convencional_validator = RegexValidator(
     message="El teléfono convencional debe tener 8 dígitos o escribir 'no'."
 )
 
+
 def fecha_no_futura(value):
+    """✅ No permitir fechas futuras."""
     if value and value > timezone.now().date():
         raise ValidationError("La fecha no puede ser futura.")
+
 
 # ===============================
 # ✅ MODELO BASE (OBLIGA VALIDACIÓN)
@@ -40,8 +44,9 @@ class ValidatedModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.full_clean()  # ✅ obliga validaciones
         super().save(*args, **kwargs)
+
 
 # ===============================
 # ✅ DATOS PERSONALES
@@ -65,7 +70,11 @@ class DatosPersonales(ValidatedModel):
     nacionalidad = models.CharField(max_length=20)
     lugarnacimiento = models.CharField(max_length=60)
 
-    fechanacimiento = models.DateField(null=True, blank=True, validators=[fecha_no_futura])
+    fechanacimiento = models.DateField(
+        null=True,
+        blank=True,
+        validators=[fecha_no_futura]
+    )
 
     numerocedula = models.CharField(
         max_length=10,
@@ -97,7 +106,7 @@ class DatosPersonales(ValidatedModel):
 
     sitioweb = models.URLField(max_length=200, blank=True, null=True)
 
-    # ✅ ESTE CAMPO ES EL DE LA FOTO (IMPORTANTE)
+    # ✅ FOTO PERFIL (Cloudinary)
     fotoperfil = models.ImageField(upload_to="fotos/", blank=True, null=True)
 
     class Meta:
@@ -105,6 +114,7 @@ class DatosPersonales(ValidatedModel):
 
     def __str__(self):
         return f"{self.nombres} {self.apellidos}"
+
 
 # ===============================
 # ✅ EXPERIENCIA LABORAL
@@ -167,6 +177,7 @@ class ExperienciaLaboral(ValidatedModel):
     def __str__(self):
         return f"{self.cargodesempenado} - {self.nombrempresa}"
 
+
 # ===============================
 # ✅ CURSOS REALIZADOS
 # ===============================
@@ -180,6 +191,7 @@ class CursosRealizados(ValidatedModel):
     )
 
     nombrecurso = models.CharField(max_length=100)
+
     fechainicio = models.DateField(validators=[fecha_no_futura])
     fechafin = models.DateField(validators=[fecha_no_futura])
 
@@ -210,3 +222,153 @@ class CursosRealizados(ValidatedModel):
 
     def __str__(self):
         return self.nombrecurso
+
+
+# ===============================
+# ✅ RECONOCIMIENTOS
+# ===============================
+class Reconocimientos(ValidatedModel):
+    TIPO_CHOICES = [
+        ("Académico", "Académico"),
+        ("Público", "Público"),
+        ("Privado", "Privado"),
+    ]
+
+    idreconocimiento = models.AutoField(primary_key=True)
+
+    perfil = models.ForeignKey(
+        DatosPersonales,
+        on_delete=models.CASCADE,
+        db_column="idperfilconqueestaactivo"
+    )
+
+    tiporeconocimiento = models.CharField(max_length=100, choices=TIPO_CHOICES)
+    fechareconocimiento = models.DateField(validators=[fecha_no_futura])
+    descripcionreconocimiento = models.CharField(max_length=100)
+
+    entidadpatrocinadora = models.CharField(max_length=100)
+    nombrecontactoauspicia = models.CharField(max_length=100, blank=True, null=True)
+
+    telefonocontactoauspicia = models.CharField(
+        max_length=60,
+        blank=True,
+        null=True,
+        validators=[telefono_8_10_validator]
+    )
+
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    rutacertificado = models.FileField(
+        upload_to="certificados/reconocimientos/",
+        blank=True, null=True
+    )
+
+    class Meta:
+        db_table = "reconocimientos"
+
+    def __str__(self):
+        return f"{self.tiporeconocimiento} - {self.descripcionreconocimiento}"
+
+
+# ===============================
+# ✅ PRODUCTOS ACADÉMICOS
+# ===============================
+class ProductosAcademicos(ValidatedModel):
+    idproductoacademico = models.AutoField(primary_key=True)
+
+    perfil = models.ForeignKey(
+        DatosPersonales,
+        on_delete=models.CASCADE,
+        db_column="idperfilconqueestaactivo"
+    )
+
+    nombrerecurso = models.CharField(max_length=120)
+    clasificador = models.CharField(max_length=80)
+    descripcion = models.CharField(max_length=200)
+
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    rutacertificado = models.FileField(
+        upload_to="productos/academicos/",
+        blank=True, null=True
+    )
+
+    class Meta:
+        db_table = "productosacademicos"
+
+    def __str__(self):
+        return self.nombrerecurso
+
+
+# ===============================
+# ✅ PRODUCTOS LABORALES
+# ===============================
+class ProductosLaborales(ValidatedModel):
+    idproductolaboral = models.AutoField(primary_key=True)
+
+    perfil = models.ForeignKey(
+        DatosPersonales,
+        on_delete=models.CASCADE,
+        db_column="idperfilconqueestaactivo"
+    )
+
+    nombreproducto = models.CharField(max_length=120)
+    fechaproducto = models.DateField(blank=True, null=True, validators=[fecha_no_futura])
+    descripcion = models.CharField(max_length=200)
+
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    rutacertificado = models.FileField(
+        upload_to="productos/laborales/",
+        blank=True, null=True
+    )
+
+    class Meta:
+        db_table = "productoslaborales"
+
+    def __str__(self):
+        return self.nombreproducto
+
+
+# ===============================
+# ✅ VENTA DE GARAGE
+# ===============================
+class VentaGarage(ValidatedModel):
+    ESTADO_CHOICES = [
+        ("Disponible", "Disponible"),
+        ("Vendido", "Vendido"),
+    ]
+
+    idventagarage = models.AutoField(primary_key=True)
+
+    perfil = models.ForeignKey(
+        DatosPersonales,
+        on_delete=models.CASCADE,
+        db_column="idperfilconqueestaactivo"
+    )
+
+    nombreproducto = models.CharField(max_length=120)
+
+    valordelbien = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+
+    estadoproducto = models.CharField(
+        max_length=20,
+        choices=ESTADO_CHOICES,
+        default="Disponible"
+    )
+
+    descripcion = models.CharField(max_length=250)
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "ventagarage"
+        constraints = [
+            models.CheckConstraint(condition=Q(valordelbien__gte=0), name="garage_valor_gte_0")
+        ]
+
+    def __str__(self):
+        return f"{self.nombreproducto} - {self.estadoproducto}"
