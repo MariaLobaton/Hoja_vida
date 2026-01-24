@@ -8,7 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# ✅ Cargar variables del archivo .env (solo local)
+# ✅ Cargar variables del .env (solo local)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,8 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # ✅ Cloudinary (MEDIA en Render Free)
-    "cloudinary",
     "cloudinary_storage",
+    "cloudinary",
 
     "cv",
 ]
@@ -63,7 +63,7 @@ INSTALLED_APPS = [
 # ==========================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ WhiteNoise (static)
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ static en Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ✅ Internationalization
 # ==========================================================
 LANGUAGE_CODE = "es-ec"
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Guayaquil"
 USE_I18N = True
 USE_TZ = True
 
@@ -137,27 +137,31 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ✅ WhiteNoise para static files en producción
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # ==========================================================
-# ✅ MEDIA / CLOUDINARY
+# ✅ CLOUDINARY (MEDIA)
 # ==========================================================
-
-# ✅ Cloudinary configurado con variables de entorno (Render)
+# ✅ Cloudinary configurado con variables de entorno
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
     "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
 }
 
-# ✅ Guardar fotos y certificados en Cloudinary SIEMPRE
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# ✅ IMPORTANTE (Django 6): STORAGES reemplaza DEFAULT_FILE_STORAGE y STATICFILES_STORAGE
+STORAGES = {
+    # ✅ TODO lo que subas (ImageField/FileField) se va a Cloudinary
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    # ✅ Static files con WhiteNoise
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-# ✅ MEDIA_URL (solo para que Django reconozca rutas si se usan en templates)
 MEDIA_URL = "/media/"
 
-# ✅ En producción Render NO guarda MEDIA_ROOT, por eso solo se usa local
+# ✅ Solo local (por si pruebas en tu PC)
 if DEBUG:
     MEDIA_ROOT = BASE_DIR / "media"
 

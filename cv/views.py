@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
 from reportlab.pdfgen import canvas
@@ -15,6 +15,46 @@ from .models import (
     DatosPersonales, ExperienciaLaboral, CursosRealizados, Reconocimientos,
     ProductosAcademicos, ProductosLaborales, VentaGarage
 )
+
+from .forms import DatosPersonalesForm
+
+
+# ======================================================
+# ✅ VISTA PARA EDITAR PERFIL (SUBE FOTO A CLOUDINARY)
+# ======================================================
+def editar_perfil(request):
+    # ✅ Traer perfil activo
+    perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
+
+    # ✅ Si no existe perfil, puedes crearlo automáticamente (opcional)
+    if not perfil:
+        perfil = DatosPersonales.objects.create(
+            descripcionperfil="",
+            perfilactivo=1,
+            apellidos="",
+            nombres="",
+            nacionalidad="",
+            lugarnacimiento="",
+            numerocedula="0000000000",
+            sexo="H",
+            estadocivil="",
+            direcciondomiciliaria=""
+        )
+
+    if request.method == "POST":
+        # ✅ CLAVE: request.FILES para que suba la imagen
+        form = DatosPersonalesForm(request.POST, request.FILES, instance=perfil)
+
+        if form.is_valid():
+            form.save()  # ✅ aquí Cloudinary guarda la imagen
+            return redirect("cv_view")
+    else:
+        form = DatosPersonalesForm(instance=perfil)
+
+    return render(request, "cv/editar_perfil.html", {
+        "form": form,
+        "perfil": perfil
+    })
 
 
 # ======================================================
@@ -56,7 +96,6 @@ def cv_view(request):
             activarparaqueseveaenfront=True
         )
 
-        # ✅ Solo mostrar lo que NO esté vendido
         garage = VentaGarage.objects.filter(
             perfil=perfil,
             activarparaqueseveaenfront=True
@@ -124,7 +163,6 @@ def cv_pdf(request):
     p = canvas.Canvas(response, pagesize=letter)
     width, height = letter
 
-    # ✅ Márgenes
     x_left = 2 * cm
     x_right = width - 2 * cm
     y = height - 2 * cm
@@ -133,9 +171,6 @@ def cv_pdf(request):
     # ✅ FUNCIÓN PARA CARGAR FOTO DESDE URL (CLOUDINARY)
     # ======================================================
     def draw_image_from_url(img_url, x, y_pos, w, h):
-        """
-        ✅ Dibuja imagen desde URL (Cloudinary) en ReportLab
-        """
         try:
             with urlopen(img_url) as response_img:
                 image_bytes = response_img.read()
@@ -147,9 +182,6 @@ def cv_pdf(request):
         except:
             return False
 
-    # --------------------------
-    # Funciones de apoyo
-    # --------------------------
     def nueva_pagina_si_es_necesario():
         nonlocal y
         if y < 3 * cm:
@@ -157,9 +189,6 @@ def cv_pdf(request):
             y = height - 2 * cm
 
     def draw_section_title(text):
-        """
-        ✅ Título de sección y línea separada correctamente
-        """
         nonlocal y
         nueva_pagina_si_es_necesario()
 
@@ -179,9 +208,6 @@ def cv_pdf(request):
         y -= 0.45 * cm
 
     def draw_wrapped_text(text, font="Helvetica", size=10, leading=16, max_width=None):
-        """
-        ✅ Texto con salto de línea automático
-        """
         nonlocal y
         if not text:
             return
@@ -213,9 +239,6 @@ def cv_pdf(request):
         y -= 4
 
     def draw_card(title, subtitle=None, body=None):
-        """
-        ✅ Tarjeta gris que cubre TODO el texto
-        """
         nonlocal y
         nueva_pagina_si_es_necesario()
 
@@ -302,12 +325,11 @@ def cv_pdf(request):
         p.save()
         return response
 
-    # ✅ Foto más grande + buena posición
     foto_size = 3.6 * cm
     foto_x = x_right - foto_size - 0.6 * cm
     foto_y = height - 5.0 * cm
 
-    # ✅ Cloudinary: usar .url (NO .path)
+    # ✅ Cloudinary: usar .url
     if hasattr(perfil, "fotoperfil") and perfil.fotoperfil:
         try:
             img_url = perfil.fotoperfil.url
@@ -315,30 +337,22 @@ def cv_pdf(request):
         except:
             pass
 
-    # ✅ Nombre
     p.setFillColor(colors.HexColor("#111827"))
     p.setFont("Helvetica-Bold", 18)
     p.drawString(x_left, y, f"{perfil.nombres} {perfil.apellidos}")
     y -= 22
 
-    # ✅ Descripción
     p.setFillColor(colors.HexColor("#4b5563"))
     p.setFont("Helvetica", 11)
     p.drawString(x_left, y, perfil.descripcionperfil)
     y -= 25
 
-    # --------------------------
-    # Datos personales
-    # --------------------------
     if "datos" in secciones:
         draw_section_title("Datos personales")
         draw_wrapped_text(f"Cédula: {perfil.numerocedula}", size=10)
         draw_wrapped_text(f"Nacionalidad: {perfil.nacionalidad}", size=10)
         draw_wrapped_text(f"Dirección: {perfil.direcciondomiciliaria}", size=10)
 
-    # --------------------------
-    # Experiencia
-    # --------------------------
     if "experiencia" in secciones:
         draw_section_title("Experiencia laboral")
         if experiencia:
@@ -351,9 +365,6 @@ def cv_pdf(request):
         else:
             draw_card("No hay experiencia registrada.")
 
-    # --------------------------
-    # Cursos
-    # --------------------------
     if "cursos" in secciones:
         draw_section_title("Cursos realizados")
         if cursos:
@@ -366,9 +377,6 @@ def cv_pdf(request):
         else:
             draw_card("No hay cursos registrados.")
 
-    # --------------------------
-    # Reconocimientos
-    # --------------------------
     if "reconocimientos" in secciones:
         draw_section_title("Reconocimientos")
         if reconocimientos:
@@ -381,9 +389,6 @@ def cv_pdf(request):
         else:
             draw_card("No hay reconocimientos registrados.")
 
-    # --------------------------
-    # Productos académicos
-    # --------------------------
     if "prod_academicos" in secciones:
         draw_section_title("Productos académicos")
         if productos_academicos:
@@ -396,9 +401,6 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos académicos registrados.")
 
-    # --------------------------
-    # Productos laborales
-    # --------------------------
     if "prod_laborales" in secciones:
         draw_section_title("Productos laborales")
         if productos_laborales:
@@ -411,9 +413,6 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos laborales registrados.")
 
-    # --------------------------
-    # Venta de garage (si lo agregas en el selector)
-    # --------------------------
     if "garage" in secciones:
         draw_section_title("Venta de garage")
         if garage:
