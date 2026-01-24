@@ -6,25 +6,18 @@
 </head>
 <body>
 
-    <h2>Editar Perfil</h2>
+<h2>Editar Perfil</h2>
 
-    <!-- ✅ IMPORTANTE: multipart/form-data para subir imagen -->
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
 
-        {{ form.as_p }}
-
-        <button type="submit">Guardar</button>
-    </form>
-
-    <hr>
-
+{% if perfil.fotoperfil %}
     <h3>Foto actual:</h3>
-    {% if perfil.fotoperfil %}
-        <img src="{{ perfil.fotoperfil.url }}" width="160">
-    {% else %}
-        <p>No hay foto subida</p>
-    {% endif %}
+    <img src="{{ perfil.fotoperfil.url }}" width="200">
+{% endif %}
 
 </body>
 </html>
