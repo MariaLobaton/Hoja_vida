@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db.models import Q, F
+from django.core.validators import RegexValidator
 
 
 # ===============================
@@ -74,12 +75,18 @@ class DatosPersonales(ValidatedModel):
     estadocivil = models.CharField(max_length=50)
     licenciaconducir = models.CharField(max_length=6, blank=True, null=True)
 
-    # ✅ SOLO 10 dígitos
+    telefono_convencional_validator = RegexValidator(
+    regex=r"^(?:\d{8}|[Nn][Oo])$",
+    message="El teléfono convencional debe tener 8 dígitos o escribir 'no'."
+      )
     telefonoconvencional = models.CharField(
-        max_length=10,
-        blank=True, null=True,
-        validators=[telefono_validator]
-    )
+    max_length=8,  # ✅ 8 dígitos (o "no")
+    blank=True,
+    null=True,
+    validators=[telefono_convencional_validator]
+     )
+
+    
 
     # ✅ SOLO 10 dígitos
     telefonofijo = models.CharField(
