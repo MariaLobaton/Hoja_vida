@@ -19,23 +19,21 @@ SECRET_KEY = os.environ.get(
     "django-insecure-i5%#q45(&lrdi0@=2n^o_3@nyjwq*d+@&4jx+pi7w-#1v2zajt"
 )
 
-# ✅ DEBUG (en Render debe ser False)
+# ✅ DEBUG
 DEBUG = os.environ.get("DEBUG", "0").lower() in ("1", "true", "yes")
 
-# ✅ Render hostname automático (para ALLOWED_HOSTS)
+# ✅ Render hostname automático
 RENDER_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
 # ✅ ALLOWED_HOSTS
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
-# Si Render te da hostname, lo añadimos
 if RENDER_HOST:
     ALLOWED_HOSTS.append(RENDER_HOST)
 
-# Si no hay nada, por seguridad deja localhost en dev
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+if DEBUG:
+    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
 
 # ✅ CSRF para Render
 CSRF_TRUSTED_ORIGINS = []
@@ -53,7 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # ✅ Cloudinary (para fotos/certificados en Render Free)
+    # ✅ Cloudinary (MEDIA en Render Free)
     "cloudinary",
     "cloudinary_storage",
 
@@ -65,7 +63,7 @@ INSTALLED_APPS = [
 # ==========================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ WhiteNoise
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ WhiteNoise (static)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -94,12 +92,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # ==========================================================
-# ✅ DATABASE (Postgres en Render)
+# ✅ DATABASE
 # ==========================================================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    # ✅ Si no hay DATABASE_URL, usa SQLite para desarrollo local
+    # ✅ SQLite local
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -134,37 +132,34 @@ USE_I18N = True
 USE_TZ = True
 
 # ==========================================================
-# ✅ Static & Media
+# ✅ Static files
 # ==========================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ✅ Si tienes una carpeta static en tu proyecto, activa esto:
-# STATICFILES_DIRS = [BASE_DIR / "static"]
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-# ✅ WhiteNoise (static files)
+# ✅ WhiteNoise para static files en producción
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ==========================================================
-# ✅ CLOUDINARY (MEDIA en Render Free)
+# ✅ MEDIA / CLOUDINARY
 # ==========================================================
-# ✅ Estos valores se toman desde variables de entorno en Render:
-# CLOUDINARY_CLOUD_NAME
-# CLOUDINARY_API_KEY
-# CLOUDINARY_API_SECRET
 
+# ✅ Cloudinary configurado con variables de entorno (Render)
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
     "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
 }
 
-# ✅ Guardar SUBIDAS (foto/certificados) en Cloudinary SIEMPRE
+# ✅ Guardar fotos y certificados en Cloudinary SIEMPRE
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+# ✅ MEDIA_URL (solo para que Django reconozca rutas si se usan en templates)
+MEDIA_URL = "/media/"
+
+# ✅ En producción Render NO guarda MEDIA_ROOT, por eso solo se usa local
+if DEBUG:
+    MEDIA_ROOT = BASE_DIR / "media"
 
 # ==========================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
