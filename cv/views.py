@@ -20,40 +20,28 @@ from .forms import DatosPersonalesForm
 
 
 # ======================================================
-# ✅ VISTA PARA EDITAR PERFIL (SUBE FOTO A CLOUDINARY)
+# ✅ VISTA PARA EDITAR PERFIL
 # ======================================================
 def editar_perfil(request):
-    """
-    ✅ Edita el perfil activo.
-    ✅ Si no existe uno, te deja CREARLO llenando el formulario.
-    ✅ IMPORTANTE: usa request.FILES para subir imagen a Cloudinary
-    """
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
     if request.method == "POST":
         form = DatosPersonalesForm(request.POST, request.FILES, instance=perfil)
-
         if form.is_valid():
             nuevo = form.save(commit=False)
-
-            # ✅ Si estás creando por primera vez, dejar activo
             if not perfil:
                 nuevo.perfilactivo = 1
-
             nuevo.save()
             return redirect("cv_view")
     else:
         form = DatosPersonalesForm(instance=perfil)
 
-    return render(request, "cv/editar_perfil.html", {
-        "form": form,
-        "perfil": perfil
-    })
+    return render(request, "cv/editar_perfil.html", {"form": form, "perfil": perfil})
 
 
 # ======================================================
 # ✅ VISTA NORMAL HTML
-# ✅ Aquí armamos la lista "certificados" para el sidebar
+# ✅ Lista de CERTIFICADOS (Cursos + Reconocimientos + Productos)
 # ======================================================
 def cv_view(request):
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
@@ -65,97 +53,80 @@ def cv_view(request):
     productos_laborales = []
     garage = []
 
-    certificados = []  # ✅ lista unificada (Cursos + Reconocimientos)
+    certificados = []  # ✅ lista unificada para anexos
 
     if perfil:
-        experiencia = ExperienciaLaboral.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
+        experiencia = ExperienciaLaboral.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        cursos = CursosRealizados.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        reconocimientos = Reconocimientos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        productos_academicos = ProductosAcademicos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        productos_laborales = ProductosLaborales.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        garage = VentaGarage.objects.filter(perfil=perfil, activarparaqueseveaenfront=True).exclude(estadoproducto="Vendido")
 
-        cursos = CursosRealizados.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        reconocimientos = Reconocimientos.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        productos_academicos = ProductosAcademicos.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        productos_laborales = ProductosLaborales.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        garage = VentaGarage.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        ).exclude(estadoproducto="Vendido")
-
-        # ======================================================
-        # ✅ CERTIFICADOS UNIFICADOS para imprimir como anexos
-        # ✅ Se ordenan por fecha (de MÁS ACTUAL a MÁS ANTIGUA)
-        # ======================================================
-
-        # ✅ Certificados de CURSOS
+        # ✅ CERTIFICADOS DE CURSOS
         for c in cursos:
             if getattr(c, "rutacertificado", None):
-                # orden: usa fechafin o fechainicio
                 fecha = getattr(c, "fechafin", None) or getattr(c, "fechainicio", None)
-
                 certificados.append({
-                    "value": f"CUR-{c.pk}",  # ✅ FIX: usar pk
-                    "nombre": f"{c.nombrecurso}",
+                    "value": f"CUR-{c.pk}",
+                    "nombre": c.nombrecurso,
                     "tipo": "Curso",
                     "fecha": fecha
                 })
 
-        # ✅ Certificados de RECONOCIMIENTOS
+        # ✅ CERTIFICADOS DE RECONOCIMIENTOS
         for r in reconocimientos:
             if getattr(r, "rutacertificado", None):
-                # si en tu modelo no existe fecha, quedará None
-                fecha = getattr(r, "fechareconocimiento", None)
-
+                fecha = getattr(r, "fechareconocimiento", None)  # si no existe, queda None
                 certificados.append({
-                    "value": f"REC-{r.pk}",  # ✅ FIX: usar pk
+                    "value": f"REC-{r.pk}",
                     "nombre": f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}",
                     "tipo": "Reconocimiento",
                     "fecha": fecha
                 })
 
-        # ✅ ORDENAR: MÁS RECIENTE → MÁS ANTIGUO, y None al final
-        certificados_con_fecha = [x for x in certificados if x.get("fecha") is not None]
-        certificados_sin_fecha = [x for x in certificados if x.get("fecha") is None]
+        # ✅ CERTIFICADOS DE PRODUCTOS ACADÉMICOS
+        for pa in productos_academicos:
+            if getattr(pa, "rutacertificado", None):
+                fecha = getattr(pa, "fecharecurso", None)  # si no existe, queda None
+                certificados.append({
+                    "value": f"PA-{pa.pk}",
+                    "nombre": f"{pa.nombrerecurso} - {pa.clasificador}",
+                    "tipo": "Producto académico",
+                    "fecha": fecha
+                })
 
-        certificados_con_fecha.sort(key=lambda x: x["fecha"], reverse=True)
-        certificados = certificados_con_fecha + certificados_sin_fecha
+        # ✅ CERTIFICADOS DE PRODUCTOS LABORALES
+        for pl in productos_laborales:
+            if getattr(pl, "rutacertificado", None):
+                fecha = getattr(pl, "fechaproducto", None)
+                certificados.append({
+                    "value": f"PL-{pl.pk}",
+                    "nombre": pl.nombreproducto,
+                    "tipo": "Producto laboral",
+                    "fecha": fecha
+                })
+
+        # ✅ Ordenar por fecha (menor a mayor) | None al final
+        certificados.sort(key=lambda x: (x["fecha"] is None, x["fecha"]))
 
     return render(request, "cv/cv.html", {
         "perfil": perfil,
         "experiencia": experiencia,
         "cursos": cursos,
         "reconocimientos": reconocimientos,
-        "certificados": certificados,  # ✅ sidebar
         "productos_academicos": productos_academicos,
         "productos_laborales": productos_laborales,
         "garage": garage,
+        "certificados": certificados,  # ✅ sidebar
     })
 
 
 # ======================================================
-# ✅ PDF (REPORTLAB) + FOTO CLOUDINARY + ANEXOS
-# ✅ ORDEN FIJO + CERTIFICADOS EN HOJAS NUEVAS
+# ✅ PDF (REPORTLAB) + ANEXOS CERTIFICADOS
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
-
-    # ✅ tokens seleccionados: CUR-1, REC-5, etc
     certificados_tokens = request.GET.getlist("cert")
 
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
@@ -164,41 +135,14 @@ def cv_pdf(request):
     cursos = []
     productos_academicos = []
     productos_laborales = []
-    garage = []
-
-    # ✅ Reconocimientos normales (para sección del CV)
     reconocimientos_cv = Reconocimientos.objects.none()
 
     if perfil:
-        experiencia = ExperienciaLaboral.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        cursos = CursosRealizados.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        reconocimientos_cv = Reconocimientos.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        productos_academicos = ProductosAcademicos.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        productos_laborales = ProductosLaborales.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        )
-
-        garage = VentaGarage.objects.filter(
-            perfil=perfil,
-            activarparaqueseveaenfront=True
-        ).exclude(estadoproducto="Vendido")
+        experiencia = ExperienciaLaboral.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        cursos = CursosRealizados.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        reconocimientos_cv = Reconocimientos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        productos_academicos = ProductosAcademicos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        productos_laborales = ProductosLaborales.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="hoja_vida.pdf"'
@@ -210,14 +154,10 @@ def cv_pdf(request):
     x_right = width - 2 * cm
     y = height - 2 * cm
 
-    # ======================================================
-    # ✅ FUNCIÓN PARA CARGAR IMAGEN DESDE URL
-    # ======================================================
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
             with urlopen(img_url, timeout=7) as response_img:
                 image_bytes = response_img.read()
-
             image_file = BytesIO(image_bytes)
             img = ImageReader(image_file)
             p.drawImage(img, x, y_pos, width=w, height=h, mask="auto")
@@ -234,26 +174,21 @@ def cv_pdf(request):
     def draw_section_title(text):
         nonlocal y
         nueva_pagina_si_es_necesario()
-
         y -= 0.15 * cm
         p.setFillColor(colors.HexColor("#1f2937"))
         p.setFont("Helvetica-Bold", 12)
         p.drawString(x_left, y, text.upper())
-
         y -= 0.55 * cm
-
         if text.lower() != "datos personales":
             p.setStrokeColor(colors.HexColor("#1f2937"))
             p.setLineWidth(1)
             p.line(x_left, y, x_right, y)
-
         y -= 0.45 * cm
 
     def draw_wrapped_text(text, font="Helvetica", size=10, leading=16, max_width=None):
         nonlocal y
         if not text:
             return
-
         if max_width is None:
             max_width = x_right - x_left
 
@@ -303,16 +238,12 @@ def cv_pdf(request):
                     linea = w
             return lineas
 
-        card_height = 10
-        card_height += 16
-
+        card_height = 10 + 16
         if subtitle:
             card_height += 13
-
         if body:
             lineas_body = contar_lineas(body, font="Helvetica", size=9)
             card_height += (lineas_body * leading)
-
         card_height += 14
 
         p.setFillColor(colors.HexColor("#F3F4F6"))
@@ -357,9 +288,7 @@ def cv_pdf(request):
 
         y -= (card_height + 14)
 
-    # ======================================================
     # ✅ ENCABEZADO
-    # ======================================================
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
         p.drawString(x_left, y, "No existe un perfil activo.")
@@ -370,10 +299,9 @@ def cv_pdf(request):
     foto_x = x_right - foto_size - 0.6 * cm
     foto_y = height - 5.0 * cm
 
-    if perfil.fotoperfil:
+    if getattr(perfil, "fotoperfil", None):
         try:
-            img_url = perfil.fotoperfil.url
-            draw_image_from_url(img_url, foto_x, foto_y, foto_size, foto_size)
+            draw_image_from_url(perfil.fotoperfil.url, foto_x, foto_y, foto_size, foto_size)
         except:
             pass
 
@@ -384,12 +312,10 @@ def cv_pdf(request):
 
     p.setFillColor(colors.HexColor("#4b5563"))
     p.setFont("Helvetica", 11)
-    p.drawString(x_left, y, str(perfil.descripcionperfil))
+    p.drawString(x_left, y, perfil.descripcionperfil)
     y -= 25
 
-    # ======================================================
-    # ✅ ORDEN FIJO DEL PDF
-    # ======================================================
+    # ✅ ORDEN FIJO
     if "datos" in secciones:
         draw_section_title("Datos personales")
         draw_wrapped_text(f"Cédula: {perfil.numerocedula}", size=10)
@@ -402,7 +328,7 @@ def cv_pdf(request):
             for e in experiencia:
                 draw_card(
                     title=f"{e.cargodesempenado} - {e.nombrempresa}",
-                    subtitle=getattr(e, "lugarempresa", ""),
+                    subtitle=e.lugarempresa,
                     body=e.descripcionfunciones
                 )
         else:
@@ -422,7 +348,7 @@ def cv_pdf(request):
 
     if "reconocimientos" in secciones:
         draw_section_title("Reconocimientos")
-        if reconocimientos_cv.exists():
+        if reconocimientos_cv:
             for r in reconocimientos_cv:
                 draw_card(
                     title=f"{r.tiporeconocimiento}: {r.descripcionreconocimiento}",
@@ -456,20 +382,16 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos laborales registrados.")
 
-    # ======================================================
-    # ✅ ANEXOS: CADA CERTIFICADO SELECCIONADO EN HOJA NUEVA
-    # ======================================================
-    if certificados_tokens and perfil:
+    # ✅ ANEXOS (cada certificado en hoja nueva)
+    if certificados_tokens:
         contador = 1
 
         for token in certificados_tokens:
             token = str(token).strip()
-
             if "-" not in token:
                 continue
 
             tipo, idx = token.split("-", 1)
-
             try:
                 idx = int(idx)
             except:
@@ -478,24 +400,33 @@ def cv_pdf(request):
             nombre = ""
             url_cert = None
 
-            # ✅ CURSO (FIX: pk)
             if tipo == "CUR":
                 obj = CursosRealizados.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
-                    nombre = f"{obj.nombrecurso}"
+                    nombre = obj.nombrecurso
                     url_cert = obj.rutacertificado.url
 
-            # ✅ RECONOCIMIENTO (FIX: pk)
             elif tipo == "REC":
                 obj = Reconocimientos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.tiporeconocimiento} - {obj.descripcionreconocimiento}"
                     url_cert = obj.rutacertificado.url
 
+            elif tipo == "PA":
+                obj = ProductosAcademicos.objects.filter(pk=idx, perfil=perfil).first()
+                if obj and getattr(obj, "rutacertificado", None):
+                    nombre = f"{obj.nombrerecurso} - {obj.clasificador}"
+                    url_cert = obj.rutacertificado.url
+
+            elif tipo == "PL":
+                obj = ProductosLaborales.objects.filter(pk=idx, perfil=perfil).first()
+                if obj and getattr(obj, "rutacertificado", None):
+                    nombre = obj.nombreproducto
+                    url_cert = obj.rutacertificado.url
+
             if not url_cert:
                 continue
 
-            # ✅ NUEVA HOJA POR CADA CERTIFICADO
             p.showPage()
 
             p.setFillColor(colors.HexColor("#111827"))
@@ -509,7 +440,6 @@ def cv_pdf(request):
             y_temp = height - 4.0 * cm
 
             try:
-                # ✅ SOLO IMAGENES (ReportLab NO imprime PDF)
                 if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                     with urlopen(url_cert, timeout=7) as response_img:
                         image_bytes = response_img.read()
@@ -533,7 +463,7 @@ def cv_pdf(request):
                 else:
                     p.setFillColor(colors.red)
                     p.setFont("Helvetica-Bold", 11)
-                    p.drawString(x_left, y_temp, "⚠️ Este certificado está en PDF y no se puede imprimir como imagen.")
+                    p.drawString(x_left, y_temp, "⚠️ El certificado está en PDF y ReportLab NO lo imprime.")
                     p.setFillColor(colors.black)
                     p.setFont("Helvetica", 10)
                     p.drawString(x_left, y_temp - 18, "Convierte el PDF a PNG/JPG para que se imprima.")
@@ -541,7 +471,7 @@ def cv_pdf(request):
             except:
                 p.setFillColor(colors.red)
                 p.setFont("Helvetica-Bold", 11)
-                p.drawString(x_left, y_temp, "❌ Error al cargar el certificado seleccionado.")
+                p.drawString(x_left, y_temp, "❌ Error al cargar el certificado.")
 
             contador += 1
 
