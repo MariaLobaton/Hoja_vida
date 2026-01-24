@@ -101,7 +101,7 @@ def cv_view(request):
         "experiencia": experiencia,
         "cursos": cursos,
         "reconocimientos": reconocimientos,
-        "certificados": reconocimientos,  # ✅ para mostrar en Secciones como lista
+        "certificados": reconocimientos,  # ✅ lista para checkboxes
         "productos_academicos": productos_academicos,
         "productos_laborales": productos_laborales,
         "garage": garage,
@@ -109,12 +109,12 @@ def cv_view(request):
 
 
 # ======================================================
-# ✅ PDF (REPORTLAB) + FOTO CLOUDINARY
+# ✅ PDF (REPORTLAB) + FOTO CLOUDINARY + ANEXOS CERTIFICADOS
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
 
-    # ✅ IDs seleccionados de certificados (blindado)
+    # ✅ IDs seleccionados de certificados (para imprimir como ANEXOS)
     certificados_ids_raw = request.GET.getlist("cert")
     certificados_ids = []
     for x in certificados_ids_raw:
@@ -128,10 +128,15 @@ def cv_pdf(request):
 
     experiencia = []
     cursos = []
-    reconocimientos = Reconocimientos.objects.none()
     productos_academicos = []
     productos_laborales = []
     garage = []
+
+    # ✅ Reconocimientos normal (sección del CV)
+    reconocimientos_cv = Reconocimientos.objects.none()
+
+    # ✅ Certificados seleccionados (ANEXOS)
+    reconocimientos_anexos = Reconocimientos.objects.none()
 
     if perfil:
         experiencia = ExperienciaLaboral.objects.filter(
@@ -144,15 +149,11 @@ def cv_pdf(request):
             activarparaqueseveaenfront=True
         )
 
-        # ✅ Solo certificados seleccionados
-        if certificados_ids:
-            reconocimientos = Reconocimientos.objects.filter(
-                perfil=perfil,
-                activarparaqueseveaenfront=True,
-                id__in=certificados_ids
-            )
-        else:
-            reconocimientos = Reconocimientos.objects.none()
+        # ✅ ESTA SECCIÓN ES PARA QUE RECONOCIMIENTOS SALGA EN EL PDF
+        reconocimientos_cv = Reconocimientos.objects.filter(
+            perfil=perfil,
+            activarparaqueseveaenfront=True
+        )
 
         productos_academicos = ProductosAcademicos.objects.filter(
             perfil=perfil,
@@ -168,6 +169,14 @@ def cv_pdf(request):
             perfil=perfil,
             activarparaqueseveaenfront=True
         ).exclude(estadoproducto="Vendido")
+
+        # ✅ SOLO ANEXOS SI SELECCIONAS CERTIFICADOS
+        if certificados_ids:
+            reconocimientos_anexos = Reconocimientos.objects.filter(
+                perfil=perfil,
+                activarparaqueseveaenfront=True,
+                id__in=certificados_ids
+            )
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="hoja_vida.pdf"'
@@ -326,12 +335,13 @@ def cv_pdf(request):
 
         y -= (card_height + 14)
 
-    # --------------------------
-    # Encabezado con foto
-    # --------------------------
+    # ======================================================
+    # ✅ ENCABEZADO
+    # ======================================================
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
         p.drawString(x_left, y, "No existe un perfil activo.")
+        p.showPage()
         p.save()
         return response
 
@@ -356,9 +366,9 @@ def cv_pdf(request):
     p.drawString(x_left, y, perfil.descripcionperfil)
     y -= 25
 
-    # =========================
-    # ✅ SECCIONES CV NORMAL
-    # =========================
+    # ======================================================
+    # ✅ ORDEN DEL PDF (COMO TÚ QUIERES)
+    # ======================================================
     if "datos" in secciones:
         draw_section_title("Datos personales")
         draw_wrapped_text(f"Cédula: {perfil.numerocedula}", size=10)
@@ -389,6 +399,19 @@ def cv_pdf(request):
         else:
             draw_card("No hay cursos registrados.")
 
+    # ✅ RECONOCIMIENTOS SÍ SALE AQUÍ SI LO MARCAS
+    if "reconocimientos" in secciones:
+        draw_section_title("Reconocimientos")
+        if reconocimientos_cv:
+            for r in reconocimientos_cv:
+                draw_card(
+                    title=f"{r.tiporeconocimiento}: {r.descripcionreconocimiento}",
+                    subtitle=r.entidadpatrocinadora,
+                    body=""
+                )
+        else:
+            draw_card("No hay reconocimientos registrados.")
+
     if "prod_academicos" in secciones:
         draw_section_title("Productos académicos")
         if productos_academicos:
@@ -413,99 +436,73 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos laborales registrados.")
 
-    if "garage" in secciones:
-        draw_section_title("Venta de garage")
-        if garage:
-            for g in garage:
-                draw_card(
-                    title=f"{g.nombreproducto} - ${g.valordelbien}",
-                    subtitle=f"Estado: {g.estadoproducto}",
-                    body=g.descripcion
-                )
-        else:
-            draw_card("No hay productos disponibles en garage.")
-
     # ======================================================
-    # ✅ ANEXOS: CERTIFICADOS SELECCIONADOS AL FINAL
+    # ✅ ANEXOS: CERTIFICADOS SELECCIONADOS EN HOJAS NUEVAS
     # ======================================================
-    if "reconocimientos" in secciones:
-        if reconocimientos.exists():
-            for r in reconocimientos:
-                if getattr(r, "rutacertificado", None):
-                    try:
-                        url_cert = r.rutacertificado.url
+    if reconocimientos_anexos.exists():
+        contador = 1
 
-                        # ✅ SOLO IMÁGENES
-                        if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                            p.showPage()
+        for r in reconocimientos_anexos:
+            p.showPage()
 
-                            # ✅ Título
-                            p.setFillColor(colors.HexColor("#111827"))
-                            p.setFont("Helvetica-Bold", 14)
-                            p.drawString(x_left, height - 2 * cm, "ANEXO: CERTIFICADO")
+            p.setFillColor(colors.HexColor("#111827"))
+            p.setFont("Helvetica-Bold", 14)
+            p.drawString(x_left, height - 2 * cm, f"ANEXO {contador}: CERTIFICADO")
 
-                            p.setFont("Helvetica", 10)
-                            p.setFillColor(colors.HexColor("#4b5563"))
-                            p.drawString(
-                                x_left,
-                                height - 2.7 * cm,
-                                f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}"
-                            )
+            p.setFillColor(colors.HexColor("#4b5563"))
+            p.setFont("Helvetica", 10)
+            p.drawString(
+                x_left,
+                height - 2.7 * cm,
+                f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}"
+            )
 
-                            # ✅ Descargar imagen
-                            with urlopen(url_cert, timeout=7) as response_img:
-                                image_bytes = response_img.read()
+            y_temp = height - 4.0 * cm
 
-                            image_file = BytesIO(image_bytes)
-                            img = ImageReader(image_file)
+            if getattr(r, "rutacertificado", None):
+                try:
+                    url_cert = r.rutacertificado.url
 
-                            img_w, img_h = img.getSize()
+                    # ✅ SOLO SE PUEDE IMPRIMIR COMO IMAGEN
+                    if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                        with urlopen(url_cert, timeout=7) as response_img:
+                            image_bytes = response_img.read()
 
-                            # ✅ área disponible
-                            max_w = width - (4 * cm)
-                            max_h = height - (6 * cm)
+                        image_file = BytesIO(image_bytes)
+                        img = ImageReader(image_file)
 
-                            # ✅ escalar proporcional
-                            scale = min(max_w / img_w, max_h / img_h)
-                            new_w = img_w * scale
-                            new_h = img_h * scale
+                        img_w, img_h = img.getSize()
 
-                            # ✅ centrar
-                            x_img = (width - new_w) / 2
-                            y_img = (height - new_h) / 2 - 0.5 * cm
+                        max_w = width - (4 * cm)
+                        max_h = height - (6 * cm)
 
-                            p.drawImage(img, x_img, y_img, width=new_w, height=new_h, mask="auto")
+                        scale = min(max_w / img_w, max_h / img_h)
+                        new_w = img_w * scale
+                        new_h = img_h * scale
 
-                        else:
-                            # ✅ si es PDF
-                            p.showPage()
-                            p.setFont("Helvetica-Bold", 12)
-                            p.drawString(x_left, height - 2 * cm, "ANEXO: CERTIFICADO (PDF)")
-                            p.setFont("Helvetica", 10)
-                            p.drawString(
-                                x_left,
-                                height - 2.8 * cm,
-                                f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}"
-                            )
-                            p.setFont("Helvetica", 9)
-                            p.setFillColor(colors.HexColor("#374151"))
-                            p.drawString(
-                                x_left,
-                                height - 3.6 * cm,
-                                "📌 Este certificado está en PDF y ReportLab no lo imprime como imagen."
-                            )
+                        x_img = (width - new_w) / 2
+                        y_img = (height - new_h) / 2 - 0.8 * cm
 
-                    except:
-                        p.showPage()
-                        p.setFont("Helvetica-Bold", 12)
-                        p.drawString(x_left, height - 2 * cm, "❌ Error al cargar certificado")
+                        p.drawImage(img, x_img, y_img, width=new_w, height=new_h, mask="auto")
+
+                    else:
+                        p.setFillColor(colors.red)
+                        p.setFont("Helvetica-Bold", 11)
+                        p.drawString(x_left, y_temp, "⚠️ Este certificado está en PDF y no se puede imprimir como imagen.")
+                        p.setFillColor(colors.black)
                         p.setFont("Helvetica", 10)
-                        p.drawString(x_left, height - 2.8 * cm, f"{r.tiporeconocimiento}")
+                        p.drawString(x_left, y_temp - 18, "Convierte el PDF a PNG/JPG para que se imprima.")
 
-        else:
-            # Si no eligió ninguno
-            draw_section_title("Certificados / Reconocimientos")
-            draw_card("No seleccionaste certificados para imprimir.")
+                except:
+                    p.setFillColor(colors.red)
+                    p.setFont("Helvetica-Bold", 11)
+                    p.drawString(x_left, y_temp, "❌ Error al cargar el certificado seleccionado.")
+            else:
+                p.setFillColor(colors.red)
+                p.setFont("Helvetica-Bold", 11)
+                p.drawString(x_left, y_temp, "❌ Este reconocimiento no tiene archivo adjunto.")
+
+            contador += 1
 
     p.save()
     return response
