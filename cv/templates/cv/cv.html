@@ -292,16 +292,20 @@
   function generarPDF(){
     let params = [];
 
-    // ✅ secciones seleccionadas
+    // ✅ Secciones seleccionadas (solo si tienen value)
     document.querySelectorAll(".sec:checked").forEach(chk => {
-      params.push("sec=" + encodeURIComponent(chk.value));
+      if (chk.value && chk.value.trim() !== "") {
+        params.push("sec=" + encodeURIComponent(chk.value));
+      }
     });
 
-    // ✅ certificados seleccionados (SOLO si reconocimientos está activo)
+    // ✅ Certificados seleccionados (solo si tienen ID válido)
     const chkRec = document.getElementById("chkReconocimientos");
     if (chkRec && chkRec.checked) {
       document.querySelectorAll(".cert:checked").forEach(chk => {
-        params.push("cert=" + encodeURIComponent(chk.value));
+        if (chk.value && chk.value.trim() !== "") {
+          params.push("cert=" + encodeURIComponent(chk.value));
+        }
       });
     }
 
