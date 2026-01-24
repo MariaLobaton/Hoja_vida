@@ -23,30 +23,27 @@ from .forms import DatosPersonalesForm
 # ✅ VISTA PARA EDITAR PERFIL (SUBE FOTO A CLOUDINARY)
 # ======================================================
 def editar_perfil(request):
-    # ✅ Traer perfil activo
+    """
+    ✅ Edita el perfil activo.
+    ✅ Si no existe uno, te deja CREARLO llenando el formulario.
+    ✅ IMPORTANTE: usa request.FILES para subir imagen a Cloudinary
+    """
+
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
-    # ✅ Si no existe perfil, puedes crearlo automáticamente (opcional)
-    if not perfil:
-        perfil = DatosPersonales.objects.create(
-            descripcionperfil="",
-            perfilactivo=1,
-            apellidos="",
-            nombres="",
-            nacionalidad="",
-            lugarnacimiento="",
-            numerocedula="0000000000",
-            sexo="H",
-            estadocivil="",
-            direcciondomiciliaria=""
-        )
-
+    # ✅ Si existe perfil, se edita (instance=perfil)
+    # ✅ Si NO existe perfil, se crea (instance=None)
     if request.method == "POST":
-        # ✅ CLAVE: request.FILES para que suba la imagen
         form = DatosPersonalesForm(request.POST, request.FILES, instance=perfil)
 
         if form.is_valid():
-            form.save()  # ✅ aquí Cloudinary guarda la imagen
+            nuevo = form.save(commit=False)
+
+            # ✅ Si estás creando por primera vez, dejar activo
+            if not perfil:
+                nuevo.perfilactivo = 1
+
+            nuevo.save()
             return redirect("cv_view")
     else:
         form = DatosPersonalesForm(instance=perfil)
@@ -113,7 +110,7 @@ def cv_view(request):
 
 
 # ======================================================
-# ✅ PDF (REPORTLAB)
+# ✅ PDF (REPORTLAB) + FOTO CLOUDINARY
 # ======================================================
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
@@ -172,7 +169,8 @@ def cv_pdf(request):
     # ======================================================
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
-            with urlopen(img_url) as response_img:
+            # ✅ timeout para evitar que Render se cuelgue
+            with urlopen(img_url, timeout=5) as response_img:
                 image_bytes = response_img.read()
 
             image_file = BytesIO(image_bytes)
@@ -193,7 +191,6 @@ def cv_pdf(request):
         nueva_pagina_si_es_necesario()
 
         y -= 0.15 * cm
-
         p.setFillColor(colors.HexColor("#1f2937"))
         p.setFont("Helvetica-Bold", 12)
         p.drawString(x_left, y, text.upper())
@@ -329,8 +326,8 @@ def cv_pdf(request):
     foto_x = x_right - foto_size - 0.6 * cm
     foto_y = height - 5.0 * cm
 
-    # ✅ Cloudinary: usar .url
-    if hasattr(perfil, "fotoperfil") and perfil.fotoperfil:
+    # ✅ Cloudinary: usar .url (NO .path)
+    if perfil.fotoperfil:
         try:
             img_url = perfil.fotoperfil.url
             draw_image_from_url(img_url, foto_x, foto_y, foto_size, foto_size)

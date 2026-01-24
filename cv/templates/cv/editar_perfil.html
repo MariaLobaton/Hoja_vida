@@ -3,21 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Editar Perfil</title>
+
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .contenedor { max-width: 500px; margin: auto; }
+        img { border-radius: 10px; border: 1px solid #ccc; margin-top: 10px; }
+        button { padding: 10px 15px; border: none; background: #2563eb; color: white; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+        a { display: inline-block; margin-top: 10px; color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
 </head>
+
 <body>
+<div class="contenedor">
 
-<h2>Editar Perfil</h2>
+    <h2>Editar Perfil</h2>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-</form>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar cambios</button>
+    </form>
 
-{% if perfil.fotoperfil %}
-    <h3>Foto actual:</h3>
-    <img src="{{ perfil.fotoperfil.url }}" width="200">
-{% endif %}
+    {% if perfil and perfil.fotoperfil %}
+        <h3>Foto actual:</h3>
+        <img src="{{ perfil.fotoperfil.url }}" width="200" alt="Foto de perfil">
+    {% endif %}
 
+    <a href="{% url 'cv_view' %}">⬅ Volver al CV</a>
+
+</div>
 </body>
 </html>
