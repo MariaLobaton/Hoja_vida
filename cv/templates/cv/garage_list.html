@@ -7,12 +7,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* ✅ Imágenes un poco más pequeñas y completas (sin recorte) */
-    .card-img-top {
-      height: 150px;
-      object-fit: contain;
+    /* ✅ IMÁGENES MÁS GRANDES Y QUE SE VEAN COMPLETAS */
+    .card-img-top{
+      height: 200px;        /* ✅ más grande */
+      width: 100%;
+      object-fit: contain;  /* ✅ se ven completas (no recorta) */
       background: #f3f3f3;
-      padding: 8px;
+      padding: 6px;
     }
 
     .badge-estado{
@@ -87,10 +88,10 @@
               <div class="d-flex align-items-start justify-content-between">
                 <h5 class="card-title mb-1">{{ p.nombreproducto }}</h5>
 
-                <!-- ✅ PRECIO en cuadrito (sin floatformat para que no se pierda) -->
+                <!-- ✅ PRECIO (CORRECTO: valordelbien) -->
                 <div class="price-tag">
-                  <span class="price-symbol">💲</span>
-                  <span class="price-value">{{ p.precioproducto }}</span>
+                  <span class="price-symbol">$</span>
+                  <span class="price-value">{{ p.valordelbien|floatformat:"2" }}</span>
                 </div>
               </div>
 
@@ -111,10 +112,6 @@
                 <span class="badge badge-estado bg-info text-dark">
                   {{ p.estadoproducto }}
                 </span>
-
-                <small class="text-muted">
-                  {% if p.fechaproducto %}📅 {{ p.fechaproducto }}{% endif %}
-                </small>
               </div>
 
               <p class="card-text text-muted mb-3" style="min-height: 44px;">
@@ -123,7 +120,7 @@
 
               <!-- ✅ WHATSAPP FIJO (con precio correcto) -->
               {% with whatsapp_number="593978716097" %}
-                {% with precio_txt=p.precioproducto|stringformat:"s" %}
+                {% with precio_txt=p.valordelbien|stringformat:"s" %}
                   {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:precio_txt|add:"). ¿Sigue disponible?" %}
                     <a
                       class="btn btn-primary w-100"
@@ -152,3 +149,4 @@
 
 </body>
 </html>
+
