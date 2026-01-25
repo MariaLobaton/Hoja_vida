@@ -2,70 +2,71 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Venta de Garage</title>
+  <title>Venta de garage</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
 
-<div class="container py-5">
+<div class="container py-4">
 
   <div class="text-center mb-4">
-    <h2 class="fw-bold">🛒 Venta de garage</h2>
-    <p class="text-muted mb-0">
-      Artículos personales en venta. Contacta directamente si te interesa alguno.
-    </p>
-  </div>
-
-  <div class="text-center mb-4">
-    <a href="{% url 'cv_view' %}" class="btn btn-outline-dark">
-      ⬅️ Volver al CV
-    </a>
+    <h2 class="fw-bold">🛒 Artículos personales en venta</h2>
+    <p class="text-muted mb-2">Contacta directamente si te interesa algo.</p>
+    <a href="{% url 'cv_view' %}" class="text-decoration-none">⬅ Volver al CV</a>
   </div>
 
   <div class="row g-4 justify-content-center">
 
-    {% if productos %}
-      {% for g in productos %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-          <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
+    {% for p in productos %}
+      <div class="col-12 col-sm-6 col-md-5 col-lg-4">
 
-            <!-- ✅ Si tu modelo tiene imagen, cámbialo aquí:
-                 Por ejemplo: g.foto.url o g.imagen.url
-                 Si NO tienes imagen, se queda el bloque gris -->
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+
+          <!-- ✅ FOTO -->
+          {% if p.fotoproducto %}
+            <img src="{{ p.fotoproducto.url }}" class="w-100" style="height: 220px; object-fit: cover;">
+          {% else %}
             <div class="bg-secondary-subtle d-flex align-items-center justify-content-center"
-                 style="height: 170px;">
-              <span class="text-muted">Sin imagen</span>
+                 style="height:220px;">
+              <span class="text-muted">Sin foto</span>
             </div>
+          {% endif %}
 
-            <div class="card-body p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge text-bg-success">${{ g.valordelbien }}</span>
-                <span class="badge text-bg-secondary">{{ g.estadoproducto }}</span>
-              </div>
+          <div class="card-body p-3">
 
-              <h6 class="fw-bold mb-1">{{ g.nombreproducto }}</h6>
+            <!-- ✅ BADGE REGULAR / BUENO -->
+            {% if p.condicion == "Regular" %}
+              <span class="badge bg-warning text-dark mb-2">REGULAR</span>
+            {% else %}
+              <span class="badge bg-success mb-2">BUENO</span>
+            {% endif %}
 
-              <p class="text-muted mb-3" style="font-size: 13px;">
-                {{ g.descripcion }}
-              </p>
+            <h5 class="fw-bold mb-1">{{ p.nombreproducto }}</h5>
+            <p class="text-muted mb-2" style="font-size: 14px;">
+              {{ p.descripcion }}
+            </p>
 
-              <a class="btn btn-success w-100"
-                 target="_blank"
-                 href="https://wa.me/593978716097?text=Hola%20quiero%20comprar%20el%20producto:%20{{ g.nombreproducto }}%20por%20${{ g.valordelbien }}">
-                💬 Me interesa
-              </a>
-            </div>
+            <h4 class="fw-bold mb-3">${{ p.valordelbien }}</h4>
+
+            <!-- ✅ BOTÓN WHATSAPP -->
+            <a class="btn btn-success w-100 fw-bold"
+               target="_blank"
+               href="https://wa.me/593978716097?text=Hola%20estoy%20interesada%20en%20tu%20producto:%20{{ p.nombreproducto }}%20por%20${{ p.valordelbien }}">
+              📲 Me interesa
+            </a>
+
           </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div class="col-12">
-        <div class="alert alert-warning text-center">
-          No hay productos disponibles por el momento.
+
         </div>
       </div>
-    {% endif %}
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-warning text-center">
+          No hay productos disponibles por ahora.
+        </div>
+      </div>
+    {% endfor %}
 
   </div>
 </div>
