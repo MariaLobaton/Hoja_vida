@@ -56,12 +56,33 @@ def cv_view(request):
     certificados = []  # ✅ lista unificada para anexos
 
     if perfil:
-        experiencia = ExperienciaLaboral.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        cursos = CursosRealizados.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        reconocimientos = Reconocimientos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        productos_academicos = ProductosAcademicos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        productos_laborales = ProductosLaborales.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        garage = VentaGarage.objects.filter(perfil=perfil, activarparaqueseveaenfront=True).exclude(estadoproducto="Vendido")
+        experiencia = ExperienciaLaboral.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+
+        cursos = CursosRealizados.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+
+        reconocimientos = Reconocimientos.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+
+        productos_academicos = ProductosAcademicos.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+
+        productos_laborales = ProductosLaborales.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+
+        garage = VentaGarage.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        ).exclude(estadoproducto="Vendido")
+
+        # ======================================================
+        # ✅ CERTIFICADOS PARA ANEXOS (SIDEBAR)
+        # ======================================================
 
         # ✅ CERTIFICADOS DE CURSOS
         for c in cursos:
@@ -77,7 +98,8 @@ def cv_view(request):
         # ✅ CERTIFICADOS DE RECONOCIMIENTOS
         for r in reconocimientos:
             if getattr(r, "rutacertificado", None):
-                fecha = getattr(r, "fechareconocimiento", None)  # si no existe, queda None
+                # si en tu modelo NO existe fecha, quedará None
+                fecha = getattr(r, "fechareconocimiento", None)
                 certificados.append({
                     "value": f"REC-{r.pk}",
                     "nombre": f"{r.tiporeconocimiento} - {r.descripcionreconocimiento}",
@@ -88,7 +110,8 @@ def cv_view(request):
         # ✅ CERTIFICADOS DE PRODUCTOS ACADÉMICOS
         for pa in productos_academicos:
             if getattr(pa, "rutacertificado", None):
-                fecha = getattr(pa, "fecharecurso", None)  # si no existe, queda None
+                # si tu modelo NO tiene fecha para esto, quedará None
+                fecha = getattr(pa, "fecharecurso", None)
                 certificados.append({
                     "value": f"PA-{pa.pk}",
                     "nombre": f"{pa.nombrerecurso} - {pa.clasificador}",
@@ -138,11 +161,21 @@ def cv_pdf(request):
     reconocimientos_cv = Reconocimientos.objects.none()
 
     if perfil:
-        experiencia = ExperienciaLaboral.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        cursos = CursosRealizados.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        reconocimientos_cv = Reconocimientos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        productos_academicos = ProductosAcademicos.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
-        productos_laborales = ProductosLaborales.objects.filter(perfil=perfil, activarparaqueseveaenfront=True)
+        experiencia = ExperienciaLaboral.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+        cursos = CursosRealizados.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+        reconocimientos_cv = Reconocimientos.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+        productos_academicos = ProductosAcademicos.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
+        productos_laborales = ProductosLaborales.objects.filter(
+            perfil=perfil, activarparaqueseveaenfront=True
+        )
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="hoja_vida.pdf"'
@@ -154,6 +187,9 @@ def cv_pdf(request):
     x_right = width - 2 * cm
     y = height - 2 * cm
 
+    # ======================================================
+    # ✅ FUNCIONES PDF
+    # ======================================================
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
             with urlopen(img_url, timeout=7) as response_img:
@@ -288,7 +324,9 @@ def cv_pdf(request):
 
         y -= (card_height + 14)
 
+    # ======================================================
     # ✅ ENCABEZADO
+    # ======================================================
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
         p.drawString(x_left, y, "No existe un perfil activo.")
@@ -315,7 +353,9 @@ def cv_pdf(request):
     p.drawString(x_left, y, perfil.descripcionperfil)
     y -= 25
 
-    # ✅ ORDEN FIJO
+    # ======================================================
+    # ✅ ORDEN FIJO DEL PDF (como tu hoja de vida)
+    # ======================================================
     if "datos" in secciones:
         draw_section_title("Datos personales")
         draw_wrapped_text(f"Cédula: {perfil.numerocedula}", size=10)
@@ -382,7 +422,9 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos laborales registrados.")
 
-    # ✅ ANEXOS (cada certificado en hoja nueva)
+    # ======================================================
+    # ✅ ANEXOS: CADA CERTIFICADO SELECCIONADO EN HOJA NUEVA
+    # ======================================================
     if certificados_tokens:
         contador = 1
 
@@ -400,24 +442,28 @@ def cv_pdf(request):
             nombre = ""
             url_cert = None
 
+            # ✅ CURSOS
             if tipo == "CUR":
                 obj = CursosRealizados.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = obj.nombrecurso
                     url_cert = obj.rutacertificado.url
 
+            # ✅ RECONOCIMIENTOS
             elif tipo == "REC":
                 obj = Reconocimientos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.tiporeconocimiento} - {obj.descripcionreconocimiento}"
                     url_cert = obj.rutacertificado.url
 
+            # ✅ PRODUCTOS ACADÉMICOS
             elif tipo == "PA":
                 obj = ProductosAcademicos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.nombrerecurso} - {obj.clasificador}"
                     url_cert = obj.rutacertificado.url
 
+            # ✅ PRODUCTOS LABORALES
             elif tipo == "PL":
                 obj = ProductosLaborales.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
@@ -440,6 +486,7 @@ def cv_pdf(request):
             y_temp = height - 4.0 * cm
 
             try:
+                # ✅ Solo imágenes
                 if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                     with urlopen(url_cert, timeout=7) as response_img:
                         image_bytes = response_img.read()
@@ -477,3 +524,22 @@ def cv_pdf(request):
 
     p.save()
     return response
+
+
+# ======================================================
+# ✅ PÁGINA APARTE: GARAGE BONITO
+# ======================================================
+def garage_view(request):
+    perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
+
+    productos = []
+    if perfil:
+        productos = VentaGarage.objects.filter(
+            perfil=perfil,
+            activarparaqueseveaenfront=True
+        ).exclude(estadoproducto="Vendido").order_by("-pk")
+
+    return render(request, "cv/garage.html", {
+        "perfil": perfil,
+        "productos": productos
+    })
