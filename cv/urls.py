@@ -6,6 +6,6 @@ urlpatterns = [
     path("", cv_view, name="cv_view"),
     path("editar/", editar_perfil, name="editar_perfil"),
     path("pdf/", cv_pdf, name="cv_pdf"),
-    path("garage/", views.garage_list, name="garage_view"),
+    path("garage/", views.garage_list, name="garage_list"),
 
 ]
