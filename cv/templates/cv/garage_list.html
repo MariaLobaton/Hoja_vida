@@ -52,16 +52,15 @@
             {% endif %}
 
             <div class="card-body">
-              <div class="d-flex align-items-start justify-content-between">
+             <div class="d-flex align-items-start justify-content-between">
                 <h5 class="card-title mb-1">{{ p.nombreproducto }}</h5>
 
-                <!-- ✅ PRECIO CORRECTO -->
-                <span class="badge bg-dark px-3 py-2 d-inline-flex align-items-center gap-1">
-                  <span class="text-danger fw-bold fs-3">💲</span>
-                  <span class="fw-bold fs-4">{{ p.precioproducto }}</span>
-                </span>
-
-              </div>
+               <!-- ✅ PRECIO (siempre visible) -->
+                <div class="price-tag">
+                <span class="price-symbol">💲</span>
+               <span class="price-value">{{ p.precioproducto|floatformat:"2" }}</span>
+             </div>
+           </div>
 
               <div class="d-flex gap-2 align-items-center mb-2 mt-2">
 
