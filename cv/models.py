@@ -357,12 +357,20 @@ class ProductosLaborales(ValidatedModel):
 
 
 # ===============================
-# ✅ VENTA DE GARAGE
+# ✅ VENTA DE GARAGE (MEJORADA)
 # ===============================
 class VentaGarage(ValidatedModel):
-    ESTADO_CHOICES = [
+
+    # ✅ Disponibilidad
+    DISPONIBLE_CHOICES = [
         ("Disponible", "Disponible"),
         ("Vendido", "Vendido"),
+    ]
+
+    # ✅ Condición del producto (la etiqueta de color)
+    CONDICION_CHOICES = [
+        ("Regular", "Regular"),
+        ("Bueno", "Bueno"),
     ]
 
     idventagarage = models.AutoField(primary_key=True)
@@ -381,10 +389,26 @@ class VentaGarage(ValidatedModel):
         validators=[MinValueValidator(0)]
     )
 
+    # ✅ DISPONIBLE / VENDIDO
     estadoproducto = models.CharField(
         max_length=20,
-        choices=ESTADO_CHOICES,
+        choices=DISPONIBLE_CHOICES,
         default="Disponible"
+    )
+
+    # ✅ REGULAR / BUENO (badge)
+    condicion = models.CharField(
+        max_length=20,
+        choices=CONDICION_CHOICES,
+        default="Bueno"
+    )
+
+    # ✅ FOTO DEL PRODUCTO
+    fotoproducto = models.ImageField(
+        upload_to="garage/",
+        blank=True,
+        null=True,
+        storage=MediaCloudinaryStorage()
     )
 
     descripcion = models.CharField(max_length=250)
@@ -397,4 +421,4 @@ class VentaGarage(ValidatedModel):
         ]
 
     def __str__(self):
-        return f"{self.nombreproducto} - {self.estadoproducto}"
+        return f"{self.nombreproducto} - {self.estadoproducto} - {self.condicion}"
