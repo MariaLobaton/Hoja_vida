@@ -37,13 +37,6 @@
     <div style="width:110px;"></div>
   </div>
 
-  {% if not whatsapp_number %}
-    <div class="alert alert-warning">
-      ⚠️ No se detectó un teléfono en tu perfil para WhatsApp.
-      Revisa <b>telefonofijo</b> o <b>telefonoconvencional</b>.
-    </div>
-  {% endif %}
-
   {% if productos %}
     <div class="row g-4">
       {% for p in productos %}
@@ -62,21 +55,29 @@
               <div class="d-flex align-items-start justify-content-between">
                 <h5 class="card-title mb-1">{{ p.nombreproducto }}</h5>
 
+                <!-- ✅ PRECIO CORRECTO -->
                 <span class="badge bg-success px-3 py-2">
-                  ${{ p.precioproducto }}
+                  ${{ p.valordelbien }}
                 </span>
               </div>
 
               <div class="d-flex gap-2 align-items-center mb-2 mt-2">
-                {% if p.estadoproducto == "Bueno" %}
+
+                <!-- ✅ CONDICIÓN (Bueno / Regular / Malo) -->
+                {% if p.condicion == "Bueno" %}
                   <span class="badge badge-estado bg-success">BUENO</span>
-                {% elif p.estadoproducto == "Regular" %}
+                {% elif p.condicion == "Regular" %}
                   <span class="badge badge-estado bg-warning text-dark">REGULAR</span>
-                {% elif p.estadoproducto == "Malo" %}
+                {% elif p.condicion == "Malo" %}
                   <span class="badge badge-estado bg-danger">MALO</span>
                 {% else %}
-                  <span class="badge badge-estado bg-secondary">{{ p.estadoproducto }}</span>
+                  <span class="badge badge-estado bg-secondary">{{ p.condicion }}</span>
                 {% endif %}
+
+                <!-- ✅ DISPONIBLE / VENDIDO -->
+                <span class="badge badge-estado bg-info text-dark">
+                  {{ p.estadoproducto }}
+                </span>
 
                 <small class="text-muted">
                   {% if p.fechaproducto %}📅 {{ p.fechaproducto }}{% endif %}
@@ -87,8 +88,9 @@
                 {{ p.descripcion }}
               </p>
 
-              {% if whatsapp_number %}
-                {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:p.precioproducto|add:"). ¿Sigue disponible?" %}
+              <!-- ✅ WHATSAPP FIJO -->
+              {% with whatsapp_number="593978716097" %}
+                {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:p.valordelbien|add:"). ¿Sigue disponible?" %}
                   <a
                     class="btn btn-primary w-100"
                     target="_blank"
@@ -97,11 +99,8 @@
                     🛒 Comprar / Contactar
                   </a>
                 {% endwith %}
-              {% else %}
-                <button class="btn btn-secondary w-100" disabled>
-                  📵 Falta configurar teléfono
-                </button>
-              {% endif %}
+              {% endwith %}
+
             </div>
 
           </div>
@@ -118,3 +117,4 @@
 
 </body>
 </html>
+
