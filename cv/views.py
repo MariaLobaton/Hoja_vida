@@ -539,7 +539,7 @@ def garage_list(request):
             activarparaqueseveaenfront=True
         ).exclude(estadoproducto="Vendido")
 
-    return render(request, "cv/lista_de_garaje.html", {
+    return render(request, "cv/garage_list.html", {
         "perfil": perfil,
         "productos": productos
     })
