@@ -539,7 +539,10 @@ def garage_list(request):
             activarparaqueseveaenfront=True
         ).exclude(estadoproducto="Vendido")
 
+    whatsapp_number = "59397871697"
+
     return render(request, "cv/garage_list.html", {
         "perfil": perfil,
-        "productos": productos
+        "productos": productos,
+        "whatsapp_number": whatsapp_number,
     })

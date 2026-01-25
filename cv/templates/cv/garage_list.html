@@ -8,7 +8,7 @@
 
   <style>
     .card-img-top {
-      height: 180px;
+      height: 190px;
       object-fit: cover;
     }
     .badge-estado{
@@ -39,7 +39,8 @@
 
   {% if not whatsapp_number %}
     <div class="alert alert-warning">
-      ⚠️ No se detectó un teléfono en tu perfil para WhatsApp. (Revisa <b>telefonofijo</b> o <b>telefonoconvencional</b>)
+      ⚠️ No se detectó un teléfono en tu perfil para WhatsApp.
+      Revisa <b>telefonofijo</b> o <b>telefonoconvencional</b>.
     </div>
   {% endif %}
 
@@ -47,7 +48,7 @@
     <div class="row g-4">
       {% for p in productos %}
         <div class="col-12 col-sm-6 col-lg-4">
-          <div class="card shadow-sm border-0 h-100">
+          <div class="card shadow-sm border-0 h-100 overflow-hidden">
 
             {% if p.fotoproducto %}
               <img src="{{ p.fotoproducto.url }}" class="card-img-top" alt="Foto de {{ p.nombreproducto }}">
@@ -83,18 +84,24 @@
               </div>
 
               <p class="card-text text-muted mb-3" style="min-height: 44px;">
-                {{ p.descripcionproducto }}
+                {{ p.descripcion }}
               </p>
 
-              {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:p.precioproducto|add:"). ¿Sigue disponible?" %}
-                <a
-                  class="btn btn-primary w-100"
-                  target="_blank"
-                  href="https://wa.me/{{ whatsapp_number }}?text={{ msg|urlencode }}"
-                >
-                  🛒 Comprar / Contactar
-                </a>
-              {% endwith %}
+              {% if whatsapp_number %}
+                {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:p.precioproducto|add:"). ¿Sigue disponible?" %}
+                  <a
+                    class="btn btn-primary w-100"
+                    target="_blank"
+                    href="https://wa.me/{{ whatsapp_number }}?text={{ msg|urlencode }}"
+                  >
+                    🛒 Comprar / Contactar
+                  </a>
+                {% endwith %}
+              {% else %}
+                <button class="btn btn-secondary w-100" disabled>
+                  📵 Falta configurar teléfono
+                </button>
+              {% endif %}
             </div>
 
           </div>
