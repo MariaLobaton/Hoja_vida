@@ -529,17 +529,17 @@ def cv_pdf(request):
 # ======================================================
 # ✅ PÁGINA APARTE: GARAGE BONITO
 # ======================================================
-def garage_view(request):
+def garage_list(request):
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
-    productos = []
+    productos = VentaGarage.objects.none()
     if perfil:
         productos = VentaGarage.objects.filter(
             perfil=perfil,
             activarparaqueseveaenfront=True
-        ).exclude(estadoproducto="Vendido").order_by("-pk")
+        ).exclude(estadoproducto="Vendido")
 
-    return render(request, "cv/garage.html", {
+    return render(request, "cv/garage_list.html", {
         "perfil": perfil,
         "productos": productos
     })

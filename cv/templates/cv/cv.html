@@ -77,22 +77,18 @@
           </button>
         </form>
 
-        <!-- ✅ VENTA DE GARAGE -->
-        <div class="card shadow-sm p-3 mt-3">
-          <h6 class="fw-bold mb-3">🛒 Venta de garage</h6>
-            <p class="text-muted" style="font-size: 13px;">
-              Mira todos los productos disponibles...
-            </p>
-            
-          {% if garage %}
-            <div class="row g-2">
-              {% for g in garage %}
-                <div class="col-12">
-                  <div class="border rounded p-2 bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <b style="font-size: 14px;">{{ g.nombreproducto }}</b>
-                      <span class="badge bg-success">${{ g.valordelbien }}</span>
-                    </div>
+        <!-- ✅ VENTA DE GARAGE (solo botón) -->
+          <div class="card shadow-sm p-3 mt-3">
+            <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
+             <p class="text-muted mb-3" style="font-size: 13px;">
+              Mira todos los productos disponibles en el catálogo.
+             </p>
+
+             <a href="{% url 'garage_list' %}" class="btn btn-outline-primary w-100">
+              Ver productos
+             </a>
+            </div>
+
 
                   </div>
                 </div>
