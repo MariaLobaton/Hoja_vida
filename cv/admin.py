@@ -11,8 +11,8 @@ admin.site.register(Reconocimientos)
 admin.site.register(CursosRealizados)
 admin.site.register(ProductosAcademicos)
 admin.site.register(ProductosLaborales)
-admin.site.register(VentaGarage)
 
+@admin.register(VentaGarage)
 class VentaGarageAdmin(admin.ModelAdmin):
     list_display = ("nombreproducto", "valordelbien", "estadoproducto", "condicion", "activarparaqueseveaenfront")
     list_filter = ("estadoproducto", "condicion", "activarparaqueseveaenfront")
