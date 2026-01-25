@@ -530,25 +530,16 @@ def cv_pdf(request):
 # ✅ PÁGINA APARTE: GARAGE BONITO
 # ======================================================
 def garage_list(request):
-    # Trae el perfil activo (si no hay, queda None)
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
-    # Si no hay perfil activo, manda lista vacía para que el template no falle
-    if not perfil:
-        return render(request, "cv/garage_list.html", {
-            "perfil": None,
-            "productos": []
-        })
+    productos = VentaGarage.objects.none()
+    if perfil:
+        productos = VentaGarage.objects.filter(
+            perfil=perfil,
+            activarparaqueseveaenfront=True
+        ).exclude(estadoproducto="Vendido")
 
-    # Productos del perfil activo, visibles en front, y que no estén vendidos
-    productos = (
-        VentaGarage.objects
-        .filter(perfil=perfil, activarparaqueseveaenfront=True)
-        .exclude(estadoproducto="Vendido")
-        .order_by("-idventagarage")
-    )
-
-    return render(request, "cv/garage_list.html", {
+    return render(request, "cv/lista_de_garaje.html", {
         "perfil": perfil,
         "productos": productos
     })
