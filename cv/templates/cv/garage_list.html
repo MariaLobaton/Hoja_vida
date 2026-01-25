@@ -7,13 +7,44 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    /* ✅ Imágenes un poco más pequeñas y completas (sin recorte) */
     .card-img-top {
-      height: 190px;
-      object-fit: cover;
+      height: 150px;
+      object-fit: contain;
+      background: #f3f3f3;
+      padding: 8px;
     }
+
     .badge-estado{
       font-size: .75rem;
       letter-spacing: .3px;
+    }
+
+    /* ✅ CUADRITO DEL PRECIO */
+    .price-tag{
+      background: #2b2f33;      /* gris oscuro */
+      padding: 6px 12px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 95px;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+
+    .price-symbol{
+      color: #dc3545;           /* rojo */
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .price-value{
+      color: #ffffff;           /* blanco */
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
     }
   </style>
 </head>
@@ -33,7 +64,6 @@
       🛒 Venta de garage
     </h3>
 
-    <!-- espacio para que el título quede centrado visualmente -->
     <div style="width:110px;"></div>
   </div>
 
@@ -52,15 +82,17 @@
             {% endif %}
 
             <div class="card-body">
-             <div class="d-flex align-items-start justify-content-between">
+
+              <!-- ✅ Nombre + Precio -->
+              <div class="d-flex align-items-start justify-content-between">
                 <h5 class="card-title mb-1">{{ p.nombreproducto }}</h5>
 
-               <!-- ✅ PRECIO (siempre visible) -->
+                <!-- ✅ PRECIO en cuadrito (sin floatformat para que no se pierda) -->
                 <div class="price-tag">
-                <span class="price-symbol">💲</span>
-               <span class="price-value">{{ p.precioproducto|floatformat:"2" }}</span>
-             </div>
-           </div>
+                  <span class="price-symbol">💲</span>
+                  <span class="price-value">{{ p.precioproducto }}</span>
+                </div>
+              </div>
 
               <div class="d-flex gap-2 align-items-center mb-2 mt-2">
 
@@ -89,16 +121,18 @@
                 {{ p.descripcion }}
               </p>
 
-              <!-- ✅ WHATSAPP FIJO -->
+              <!-- ✅ WHATSAPP FIJO (con precio correcto) -->
               {% with whatsapp_number="593978716097" %}
-                {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:p.valordelbien|add:"). ¿Sigue disponible?" %}
-                  <a
-                    class="btn btn-primary w-100"
-                    target="_blank"
-                    href="https://wa.me/{{ whatsapp_number }}?text={{ msg|urlencode }}"
-                  >
-                    🛒 Comprar / Contactar
-                  </a>
+                {% with precio_txt=p.precioproducto|stringformat:"s" %}
+                  {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:precio_txt|add:"). ¿Sigue disponible?" %}
+                    <a
+                      class="btn btn-primary w-100"
+                      target="_blank"
+                      href="https://wa.me/{{ whatsapp_number }}?text={{ msg|urlencode }}"
+                    >
+                      🛒 Comprar / Contactar
+                    </a>
+                  {% endwith %}
                 {% endwith %}
               {% endwith %}
 
@@ -118,4 +152,3 @@
 
 </body>
 </html>
-
