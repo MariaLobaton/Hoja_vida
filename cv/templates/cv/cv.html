@@ -78,25 +78,15 @@
         </form>
 
         <!-- ✅ VENTA DE GARAGE (solo botón) -->
-          <div class="card shadow-sm p-3 mt-3">
-            <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
-             <p class="text-muted mb-3" style="font-size: 13px;">
-              Mira todos los productos disponibles en el catálogo.
-             </p>
+        <div class="card shadow-sm p-3 mt-3">
+          <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
+          <p class="text-muted mb-3" style="font-size: 13px;">
+            Mira todos los productos disponibles en el catálogo.
+          </p>
 
-             <a href="{% url 'garage_list' %}" class="btn btn-outline-primary w-100">
-              Ver productos
-             </a>
-            </div>
-
-
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="text-muted" style="font-size: 13px;">No hay productos disponibles.</p>
-          {% endif %}
+          <a href="{% url 'garage_list' %}" class="btn btn-outline-primary w-100">
+            Ver productos
+          </a>
         </div>
 
       </div>
