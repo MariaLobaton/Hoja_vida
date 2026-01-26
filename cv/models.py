@@ -414,11 +414,16 @@ class VentaGarage(ValidatedModel):
     descripcion = models.CharField(max_length=250)
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
+    # ✅ FECHA AUTOMÁTICA CUANDO SE PUBLICA (NUEVO ✅)
+    fecha_publicacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
     class Meta:
         db_table = "ventagarage"
         constraints = [
             models.CheckConstraint(condition=Q(valordelbien__gte=0), name="garage_valor_gte_0")
         ]
+        # ✅ para que en consultas salga lo más nuevo primero
+        ordering = ["-fecha_publicacion"]
 
     def __str__(self):
         return f"{self.nombreproducto} - {self.estadoproducto} - {self.condicion}"

@@ -9,11 +9,11 @@
   <style>
     /* ✅ IMÁGENES MÁS GRANDES Y QUE SE VEAN COMPLETAS */
     .card-img-top{
-      height: 200px;
+      height: 220px;
       width: 100%;
       object-fit: contain;
       background: #f3f3f3;
-      padding: 6px;
+      padding: 8px;
     }
 
     /* ✅ para indicar que la imagen se puede dar clic */
@@ -44,14 +44,14 @@
     }
 
     .price-symbol{
-      color: #dc3545;
+      color: #dc3545; /* rojo */
       font-size: 20px;
       font-weight: 800;
       line-height: 1;
     }
 
     .price-value{
-      color: #ffffff;
+      color: #ffffff; /* blanco */
       font-size: 18px;
       font-weight: 800;
       line-height: 1;
@@ -74,28 +74,29 @@
       🛒 Venta de garage
     </h3>
 
+    <!-- espacio para centrar visualmente -->
     <div style="width:110px;"></div>
   </div>
 
   {% if productos %}
     <div class="row g-4">
+
       {% for p in productos %}
         <div class="col-12 col-sm-6 col-lg-4">
           <div class="card shadow-sm border-0 h-100 overflow-hidden">
 
             {% if p.fotoproducto %}
-
               <!-- ✅ Imagen clickeable -->
               <img
                 src="{{ p.fotoproducto.url }}"
                 class="card-img-top img-click"
                 alt="Foto de {{ p.nombreproducto }}"
                 data-bs-toggle="modal"
-                data-bs-target="#modalImg{{ forloop.counter }}"
+                data-bs-target="#modalImg{{ p.idventagarage }}"
               >
 
-              <!-- ✅ Modal (Imagen grande) -->
-              <div class="modal fade" id="modalImg{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+              <!-- ✅ Modal Imagen grande -->
+              <div class="modal fade" id="modalImg{{ p.idventagarage }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                   <div class="modal-content">
 
@@ -115,7 +116,6 @@
                   </div>
                 </div>
               </div>
-
             {% else %}
               <div class="card-img-top bg-secondary-subtle d-flex align-items-center justify-content-center">
                 <span class="text-muted">Sin foto</span>
@@ -135,15 +135,20 @@
                 </div>
               </div>
 
+              <!-- ✅ Fecha publicación (si existe) -->
+              {% if p.fecha_publicacion %}
+                <small class="text-muted d-block mt-1">
+                  📅 Publicado: {{ p.fecha_publicacion|date:"d/m/Y H:i" }}
+                </small>
+              {% endif %}
+
               <div class="d-flex gap-2 align-items-center mb-2 mt-2">
 
-                <!-- ✅ CONDICIÓN (Bueno / Regular / Malo) -->
+                <!-- ✅ CONDICIÓN -->
                 {% if p.condicion == "Bueno" %}
                   <span class="badge badge-estado bg-success">BUENO</span>
                 {% elif p.condicion == "Regular" %}
                   <span class="badge badge-estado bg-warning text-dark">REGULAR</span>
-                {% elif p.condicion == "Malo" %}
-                  <span class="badge badge-estado bg-danger">MALO</span>
                 {% else %}
                   <span class="badge badge-estado bg-secondary">{{ p.condicion }}</span>
                 {% endif %}
@@ -174,10 +179,10 @@
               {% endwith %}
 
             </div>
-
           </div>
         </div>
       {% endfor %}
+
     </div>
   {% else %}
     <div class="alert alert-info">
@@ -187,7 +192,7 @@
 
 </div>
 
-<!-- ✅ IMPORTANTE: Bootstrap JS para que funcione el Modal -->
+<!-- ✅ Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
