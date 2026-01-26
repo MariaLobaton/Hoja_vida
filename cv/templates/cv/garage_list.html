@@ -91,11 +91,11 @@
                 class="card-img-top img-click"
                 alt="Foto de {{ p.nombreproducto }}"
                 data-bs-toggle="modal"
-                data-bs-target="#modalImg{{ p.id }}"
+                data-bs-target="#modalImg{{ forloop.counter }}"
               >
 
               <!-- ✅ Modal (Imagen grande) -->
-              <div class="modal fade" id="modalImg{{ p.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal fade" id="modalImg{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                   <div class="modal-content">
 
