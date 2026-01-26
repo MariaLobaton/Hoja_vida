@@ -16,7 +16,8 @@
 
 <body class="bg-light">
 
-<div class="container py-4">
+<!-- ✅ CAMBIO 1: container-fluid para usar TODO el ancho -->
+<div class="container-fluid py-4 px-4">
   <div class="row g-4">
 
     <!-- ✅ COLUMNA IZQUIERDA -->
@@ -88,9 +89,10 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA CENTRO (CONTENIDO) -->
-    <div class="col-12 col-md-8 col-lg-6">
-      <div class="card shadow p-4" style="max-width: 900px; margin-left: auto; margin-right: auto;">
+    <!-- ✅ COLUMNA CENTRO (MÁS ANCHA) -->
+    <div class="col-12 col-md-8 col-lg-7">
+      <!-- ✅ CAMBIO 2: Quité max-width y dejé w-100 -->
+      <div class="card shadow p-4 w-100">
         <h2 class="mb-0">Mi Hoja de Vida</h2>
         <hr>
 
@@ -259,8 +261,8 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA DERECHA (VENTA DE GARAGE sticky) -->
-    <div class="col-12 col-lg-3">
+    <!-- ✅ COLUMNA DERECHA (MÁS ANGOSTA) -->
+    <div class="col-12 col-lg-2">
       <div class="card shadow-sm p-3 garage-sticky">
         <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
         <p class="text-muted mb-3" style="font-size: 13px;">
