@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -10,6 +9,7 @@ from reportlab.lib.utils import ImageReader
 
 from urllib.request import urlopen
 from io import BytesIO
+from datetime import date  # ✅ IMPORTANTE para ordenar cuando hay None
 
 from .models import (
     DatosPersonales, ExperienciaLaboral, CursosRealizados, Reconocimientos,
@@ -98,7 +98,6 @@ def cv_view(request):
         # ✅ CERTIFICADOS DE RECONOCIMIENTOS
         for r in reconocimientos:
             if getattr(r, "rutacertificado", None):
-                # si en tu modelo NO existe fecha, quedará None
                 fecha = getattr(r, "fechareconocimiento", None)
                 certificados.append({
                     "value": f"REC-{r.pk}",
@@ -110,7 +109,6 @@ def cv_view(request):
         # ✅ CERTIFICADOS DE PRODUCTOS ACADÉMICOS
         for pa in productos_academicos:
             if getattr(pa, "rutacertificado", None):
-                # si tu modelo NO tiene fecha para esto, quedará None
                 fecha = getattr(pa, "fecharecurso", None)
                 certificados.append({
                     "value": f"PA-{pa.pk}",
@@ -130,8 +128,8 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ Ordenar por fecha (menor a mayor) | None al final
-        certificados.sort(key=lambda x: (x["fecha"] is None, x["fecha"]))
+        # ✅ ✅ ✅ ORDEN CORRECTO: MÁS ACTUAL → MÁS ANTIGUO (None al final)
+        certificados.sort(key=lambda x: x["fecha"] or date.min, reverse=True)
 
     return render(request, "cv/cv.html", {
         "perfil": perfil,
