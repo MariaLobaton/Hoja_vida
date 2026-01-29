@@ -150,7 +150,16 @@
               {% for e in experiencia %}
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
-                  <p class="mb-0">{{ e.descripcionfunciones }}</p>
+
+                  <!-- ✅✅✅ AGREGADO: FECHAS DE EXPERIENCIA (inicio/fin) -->
+                  {% if e.fechainiciogestion or e.fechafingestion %}
+                    <div class="text-muted small mt-1">
+                      {{ e.fechainiciogestion|date:"d/m/Y" }}{% if e.fechafingestion %} - {{ e.fechafingestion|date:"d/m/Y" }}{% endif %}
+                    </div>
+                  {% endif %}
+                  <!-- ✅✅✅ FIN AGREGADO -->
+
+                  <p class="mb-0 mt-1">{{ e.descripcionfunciones }}</p>
                 </div>
               {% endfor %}
             {% else %}

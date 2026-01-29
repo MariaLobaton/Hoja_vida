@@ -4,13 +4,12 @@ from django.utils import timezone
 from django.core.validators import RegexValidator, MinValueValidator
 from django.db.models import Q, F
 
-# ✅ IMPORTANTE para Cloudinary (PDF = RAW)
+#  IMPORTANTE para Cloudinary (PDF = RAW)
 from cloudinary_storage.storage import MediaCloudinaryStorage, RawMediaCloudinaryStorage
 
 
-# ===============================
-# ✅ VALIDADORES REUSABLES
-# ===============================
+# VALIDADORES REUSABLES
+
 
 cedula_validator = RegexValidator(
     regex=r"^\d{10}$",
@@ -39,21 +38,19 @@ def fecha_no_futura(value):
         raise ValidationError("La fecha no puede ser futura.")
 
 
-# ===============================
-# ✅ MODELO BASE (OBLIGA VALIDACIÓN)
-# ===============================
+# MODELO BASE (OBLIGA VALIDACIÓN)
+
 class ValidatedModel(models.Model):
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # ✅ obliga validaciones
+        self.full_clean()  # obliga validaciones
         super().save(*args, **kwargs)
 
 
-# ===============================
-# ✅ DATOS PERSONALES
-# ===============================
+#  DATOS PERSONALES
+
 class DatosPersonales(ValidatedModel):
     SEXO_CHOICES = [
         ("H", "Hombre"),
@@ -109,7 +106,7 @@ class DatosPersonales(ValidatedModel):
 
     sitioweb = models.URLField(max_length=200, blank=True, null=True)
 
-    # ✅ FOTO PERFIL (IMAGEN) -> MEDIA
+    # FOTO PERFIL (IMAGEN) -> MEDIA
     fotoperfil = models.ImageField(
         upload_to="fotos/",
         blank=True,
@@ -124,9 +121,8 @@ class DatosPersonales(ValidatedModel):
         return f"{self.nombres} {self.apellidos}"
 
 
-# ===============================
-# ✅ EXPERIENCIA LABORAL
-# ===============================
+# EXPERIENCIA LABORAL
+
 class ExperienciaLaboral(ValidatedModel):
     idexperiencialaboral = models.AutoField(primary_key=True)
 
@@ -158,7 +154,7 @@ class ExperienciaLaboral(ValidatedModel):
     descripcionfunciones = models.CharField(max_length=100)
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ PDF/ARCHIVO -> RAW
+    #  PDF/ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="certificados/experiencia/",
         blank=True,
@@ -188,9 +184,8 @@ class ExperienciaLaboral(ValidatedModel):
         return f"{self.cargodesempenado} - {self.nombrempresa}"
 
 
-# ===============================
-# ✅ CURSOS REALIZADOS
-# ===============================
+#   CURSOS REALIZADOS
+
 class CursosRealizados(ValidatedModel):
     idcursorealizado = models.AutoField(primary_key=True)
 
@@ -222,7 +217,7 @@ class CursosRealizados(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ PDF/ARCHIVO -> RAW
+    # PDF/ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="certificados/cursos/",
         blank=True,
@@ -240,10 +235,8 @@ class CursosRealizados(ValidatedModel):
     def __str__(self):
         return self.nombrecurso
 
+     # RECONOCIMIENTOS
 
-# ===============================
-# ✅ RECONOCIMIENTOS
-# ===============================
 class Reconocimientos(ValidatedModel):
     TIPO_CHOICES = [
         ("Académico", "Académico"),
@@ -275,7 +268,7 @@ class Reconocimientos(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ PDF/ARCHIVO -> RAW
+    # PDF/ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="certificados/reconocimientos/",
         blank=True,
@@ -290,9 +283,8 @@ class Reconocimientos(ValidatedModel):
         return f"{self.tiporeconocimiento} - {self.descripcionreconocimiento}"
 
 
-# ===============================
-# ✅ PRODUCTOS ACADÉMICOS
-# ===============================
+     # PRODUCTOS ACADÉMICOS
+
 class ProductosAcademicos(ValidatedModel):
     idproductoacademico = models.AutoField(primary_key=True)
 
@@ -306,9 +298,14 @@ class ProductosAcademicos(ValidatedModel):
     clasificador = models.CharField(max_length=80)
     descripcion = models.CharField(max_length=200)
 
+    # AGREGADO: FECHA PARA PRODUCTOS ACADÉMICOS
+    # - null/blank para no dañar registros ya creados
+    # - validator para impedir fechas futuras
+    fecharecurso = models.DateField(null=True, blank=True, validators=[fecha_no_futura])
+
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ ARCHIVO -> RAW
+    #  ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="productos/academicos/",
         blank=True,
@@ -323,9 +320,8 @@ class ProductosAcademicos(ValidatedModel):
         return self.nombrerecurso
 
 
-# ===============================
-# ✅ PRODUCTOS LABORALES
-# ===============================
+#  PRODUCTOS LABORALES
+
 class ProductosLaborales(ValidatedModel):
     idproductolaboral = models.AutoField(primary_key=True)
 
@@ -341,7 +337,7 @@ class ProductosLaborales(ValidatedModel):
 
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ ARCHIVO -> RAW
+    #  ARCHIVO -> RAW
     rutacertificado = models.FileField(
         upload_to="productos/laborales/",
         blank=True,
@@ -356,18 +352,18 @@ class ProductosLaborales(ValidatedModel):
         return self.nombreproducto
 
 
-# ===============================
-# ✅ VENTA DE GARAGE (MEJORADA)
-# ===============================
+
+# VENTA DE GARAGE (MEJORADA)
+
 class VentaGarage(ValidatedModel):
 
-    # ✅ Disponibilidad
+    # Disponibilidad
     DISPONIBLE_CHOICES = [
         ("Disponible", "Disponible"),
         ("Vendido", "Vendido"),
     ]
 
-    # ✅ Condición del producto (la etiqueta de color)
+    # Condición del producto (la etiqueta de color)
     CONDICION_CHOICES = [
         ("Regular", "Regular"),
         ("Bueno", "Bueno"),
@@ -389,21 +385,21 @@ class VentaGarage(ValidatedModel):
         validators=[MinValueValidator(0)]
     )
 
-    # ✅ DISPONIBLE / VENDIDO
+    # DISPONIBLE / VENDIDO
     estadoproducto = models.CharField(
         max_length=20,
         choices=DISPONIBLE_CHOICES,
         default="Disponible"
     )
 
-    # ✅ REGULAR / BUENO (badge)
+    # REGULAR / BUENO (badge)
     condicion = models.CharField(
         max_length=20,
         choices=CONDICION_CHOICES,
         default="Bueno"
     )
 
-    # ✅ FOTO DEL PRODUCTO
+    # FOTO DEL PRODUCTO
     fotoproducto = models.ImageField(
         upload_to="garage/",
         blank=True,
@@ -414,7 +410,7 @@ class VentaGarage(ValidatedModel):
     descripcion = models.CharField(max_length=250)
     activarparaqueseveaenfront = models.BooleanField(default=True)
 
-    # ✅ FECHA AUTOMÁTICA CUANDO SE PUBLICA (NUEVO ✅)
+    # FECHA AUTOMÁTICA CUANDO SE PUBLICA
     fecha_publicacion = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
@@ -422,7 +418,7 @@ class VentaGarage(ValidatedModel):
         constraints = [
             models.CheckConstraint(condition=Q(valordelbien__gte=0), name="garage_valor_gte_0")
         ]
-        # ✅ para que en consultas salga lo más nuevo primero
+        # para que en consultas salga lo más nuevo primero
         ordering = ["-fecha_publicacion"]
 
     def __str__(self):
