@@ -12,7 +12,6 @@
         min-height: 100vh;
       }
 
-
     /* ✅ Card flotante a la derecha que sube y baja con scroll */
     .garage-sticky{
       position: sticky;
@@ -85,7 +84,8 @@
                     <br>
                     <small class="text-muted">
                       {{ c.tipo }}
-                      {% if c.fecha %} - {{ c.fecha }}{% endif %}
+                      <!-- ✅ AGREGADO: formateo bonito de fecha en sidebar -->
+                      {% if c.fecha %} - {{ c.fecha|date:"d/m/Y" }}{% endif %}
                     </small>
                   </label>
                 </div>
@@ -167,7 +167,15 @@
               {% for c in cursos %}
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
-                  <p class="mb-1">{{ c.descripcioncurso }}</p>
+
+                  <!-- ✅ AGREGADO: FECHAS DEL CURSO (inicio/fin) -->
+                  {% if c.fechainicio or c.fechafin %}
+                    <div class="text-muted small mt-1">
+                      {{ c.fechainicio|date:"d/m/Y" }}{% if c.fechafin %} - {{ c.fechafin|date:"d/m/Y" }}{% endif %}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ c.descripcioncurso }}</p>
 
                   {% if c.rutacertificado %}
                     <a href="{{ c.rutacertificado.url }}" target="_blank"
@@ -193,7 +201,15 @@
               {% for r in reconocimientos %}
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
-                  <p class="mb-1">{{ r.entidadpatrocinadora }}</p>
+
+                  <!-- ✅ AGREGADO: FECHA DEL RECONOCIMIENTO -->
+                  {% if r.fechareconocimiento %}
+                    <div class="text-muted small mt-1">
+                      {{ r.fechareconocimiento|date:"d/m/Y" }}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ r.entidadpatrocinadora }}</p>
 
                   {% if r.rutacertificado %}
                     <a href="{{ r.rutacertificado.url }}" target="_blank"
@@ -219,7 +235,15 @@
               {% for p in productos_academicos %}
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
-                  <p class="mb-1">{{ p.descripcion }}</p>
+
+                  <!-- ✅ AGREGADO: FECHA DEL PRODUCTO ACADÉMICO -->
+                  {% if p.fecharecurso %}
+                    <div class="text-muted small mt-1">
+                      {{ p.fecharecurso|date:"d/m/Y" }}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ p.descripcion }}</p>
 
                   {% if p.rutacertificado %}
                     <a href="{{ p.rutacertificado.url }}" target="_blank"
@@ -245,9 +269,14 @@
               {% for p in productos_laborales %}
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ p.nombreproducto }}</b>
+
                   <p class="mb-1">
-                    <small class="text-muted">{{ p.fechaproducto }}</small>
+                    <!-- ✅ MEJORADO: formateo bonito de fecha -->
+                    {% if p.fechaproducto %}
+                      <small class="text-muted">{{ p.fechaproducto|date:"d/m/Y" }}</small>
+                    {% endif %}
                   </p>
+
                   <p class="mb-1">{{ p.descripcion }}</p>
 
                   {% if p.rutacertificado %}
