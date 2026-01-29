@@ -84,7 +84,6 @@
                     <br>
                     <small class="text-muted">
                       {{ c.tipo }}
-                      <!-- ✅ AGREGADO: formateo bonito de fecha en sidebar -->
                       {% if c.fecha %} - {{ c.fecha|date:"d/m/Y" }}{% endif %}
                     </small>
                   </label>
@@ -139,7 +138,44 @@
             <ul>
               <li><b>Cédula:</b> {{ perfil.numerocedula }}</li>
               <li><b>Nacionalidad:</b> {{ perfil.nacionalidad }}</li>
+
+              {% if perfil.lugarnacimiento %}
+                <li><b>Lugar de nacimiento:</b> {{ perfil.lugarnacimiento }}</li>
+              {% endif %}
+
+              {% if perfil.fechanacimiento %}
+                <li><b>Fecha de nacimiento:</b> {{ perfil.fechanacimiento|date:"d/m/Y" }}</li>
+              {% endif %}
+
+              {% if perfil.sexo %}
+                <li><b>Sexo:</b> {{ perfil.get_sexo_display }}</li>
+              {% endif %}
+
+              {% if perfil.estadocivil %}
+                <li><b>Estado civil:</b> {{ perfil.estadocivil }}</li>
+              {% endif %}
+
+              {% if perfil.licenciaconducir %}
+                <li><b>Licencia de conducir:</b> {{ perfil.licenciaconducir }}</li>
+              {% endif %}
+
+              {% if perfil.telefonoconvencional %}
+                <li><b>Teléfono convencional:</b> {{ perfil.telefonoconvencional }}</li>
+              {% endif %}
+
+              {% if perfil.telefonofijo %}
+                <li><b>Teléfono:</b> {{ perfil.telefonofijo }}</li>
+              {% endif %}
+
               <li><b>Dirección:</b> {{ perfil.direcciondomiciliaria }}</li>
+
+              {% if perfil.direcciontrabajo %}
+                <li><b>Dirección de trabajo:</b> {{ perfil.direcciontrabajo }}</li>
+              {% endif %}
+
+              {% if perfil.sitioweb %}
+                <li><b>Sitio web:</b> <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a></li>
+              {% endif %}
             </ul>
           </div>
 
@@ -151,13 +187,11 @@
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
 
-                  <!-- ✅✅✅ AGREGADO: FECHAS DE EXPERIENCIA (inicio/fin) -->
                   {% if e.fechainiciogestion or e.fechafingestion %}
                     <div class="text-muted small mt-1">
                       {{ e.fechainiciogestion|date:"d/m/Y" }}{% if e.fechafingestion %} - {{ e.fechafingestion|date:"d/m/Y" }}{% endif %}
                     </div>
                   {% endif %}
-                  <!-- ✅✅✅ FIN AGREGADO -->
 
                   <p class="mb-0 mt-1">{{ e.descripcionfunciones }}</p>
                 </div>
@@ -177,7 +211,6 @@
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
 
-                  <!-- ✅ AGREGADO: FECHAS DEL CURSO (inicio/fin) -->
                   {% if c.fechainicio or c.fechafin %}
                     <div class="text-muted small mt-1">
                       {{ c.fechainicio|date:"d/m/Y" }}{% if c.fechafin %} - {{ c.fechafin|date:"d/m/Y" }}{% endif %}
@@ -211,7 +244,6 @@
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
 
-                  <!-- ✅ AGREGADO: FECHA DEL RECONOCIMIENTO -->
                   {% if r.fechareconocimiento %}
                     <div class="text-muted small mt-1">
                       {{ r.fechareconocimiento|date:"d/m/Y" }}
@@ -245,7 +277,6 @@
                 <div class="border rounded p-3 mb-2 bg-white">
                   <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
 
-                  <!-- ✅ AGREGADO: FECHA DEL PRODUCTO ACADÉMICO -->
                   {% if p.fecharecurso %}
                     <div class="text-muted small mt-1">
                       {{ p.fecharecurso|date:"d/m/Y" }}
@@ -280,7 +311,6 @@
                   <b>{{ p.nombreproducto }}</b>
 
                   <p class="mb-1">
-                    <!-- ✅ MEJORADO: formateo bonito de fecha -->
                     {% if p.fechaproducto %}
                       <small class="text-muted">{{ p.fechaproducto|date:"d/m/Y" }}</small>
                     {% endif %}
@@ -347,3 +377,4 @@
 
 </body>
 </html>
+
