@@ -188,6 +188,16 @@ def cv_pdf(request):
     # ======================================================
     # ✅ FUNCIONES PDF
     # ======================================================
+
+    # ✅ AGREGADO: formateo dd/mm/YYYY para cualquier date
+    def fmt_fecha(d):
+        if not d:
+            return ""
+        try:
+            return d.strftime("%d/%m/%Y")
+        except:
+            return str(d)
+
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
             with urlopen(img_url, timeout=7) as response_img:
@@ -364,9 +374,24 @@ def cv_pdf(request):
         draw_section_title("Experiencia laboral")
         if experiencia:
             for e in experiencia:
+                # ✅ AGREGADO: fechas experiencia al subtitle (dd/mm/YYYY)
+                fi = fmt_fecha(getattr(e, "fechainiciogestion", None))
+                ff = fmt_fecha(getattr(e, "fechafingestion", None))
+                rango = ""
+                if fi and ff:
+                    rango = f"{fi} - {ff}"
+                elif fi and not ff:
+                    rango = f"{fi} - Actualidad"
+                elif ff and not fi:
+                    rango = ff
+
+                sub = e.lugarempresa
+                if rango:
+                    sub = f"{sub} | {rango}" if sub else rango
+
                 draw_card(
                     title=f"{e.cargodesempenado} - {e.nombrempresa}",
-                    subtitle=e.lugarempresa,
+                    subtitle=sub,
                     body=e.descripcionfunciones
                 )
         else:
@@ -376,9 +401,20 @@ def cv_pdf(request):
         draw_section_title("Cursos realizados")
         if cursos:
             for c in cursos:
+                # ✅ MEJORADO: fechas curso con formato dd/mm/YYYY
+                sub = ""
+                fi = fmt_fecha(getattr(c, "fechainicio", None))
+                ff = fmt_fecha(getattr(c, "fechafin", None))
+                if fi and ff:
+                    sub = f"{fi} - {ff}"
+                elif fi:
+                    sub = fi
+                elif ff:
+                    sub = ff
+
                 draw_card(
                     title=f"{c.nombrecurso} ({c.totalhoras} horas)",
-                    subtitle=f"{c.fechainicio} - {c.fechafin}",
+                    subtitle=sub,
                     body=c.descripcioncurso
                 )
         else:
@@ -388,9 +424,15 @@ def cv_pdf(request):
         draw_section_title("Reconocimientos")
         if reconocimientos_cv:
             for r in reconocimientos_cv:
+                # ✅ AGREGADO: fecha reconocimiento al subtitle
+                fecha_rec = fmt_fecha(getattr(r, "fechareconocimiento", None))
+                sub = r.entidadpatrocinadora
+                if fecha_rec:
+                    sub = f"{sub} | {fecha_rec}" if sub else fecha_rec
+
                 draw_card(
                     title=f"{r.tiporeconocimiento}: {r.descripcionreconocimiento}",
-                    subtitle=r.entidadpatrocinadora,
+                    subtitle=sub,
                     body=""
                 )
         else:
@@ -400,9 +442,15 @@ def cv_pdf(request):
         draw_section_title("Productos académicos")
         if productos_academicos:
             for pa in productos_academicos:
+                # ✅ AGREGADO: fecha producto académico al subtitle
+                fecha_pa = fmt_fecha(getattr(pa, "fecharecurso", None))
+                sub = pa.clasificador
+                if fecha_pa:
+                    sub = f"{sub} | {fecha_pa}" if sub else fecha_pa
+
                 draw_card(
                     title=pa.nombrerecurso,
-                    subtitle=pa.clasificador,
+                    subtitle=sub,
                     body=pa.descripcion
                 )
         else:
@@ -412,9 +460,11 @@ def cv_pdf(request):
         draw_section_title("Productos laborales")
         if productos_laborales:
             for pl in productos_laborales:
+                # ✅ MEJORADO: evita imprimir "None" y formatea la fecha
+                fecha_pl = fmt_fecha(getattr(pl, "fechaproducto", None))
                 draw_card(
                     title=pl.nombreproducto,
-                    subtitle=str(pl.fechaproducto),
+                    subtitle=fecha_pl,
                     body=pl.descripcion
                 )
         else:
