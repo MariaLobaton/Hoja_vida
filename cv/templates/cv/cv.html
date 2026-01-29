@@ -8,9 +8,9 @@
   <style>
     /* ✅ FONDO PROFESIONAL (DEGRADADO) */
     .cv-bg{
-         background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
-        min-height: 100vh;
-      }
+      background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+      min-height: 100vh;
+    }
 
     /* ✅ Card flotante a la derecha que sube y baja con scroll */
     .garage-sticky{
@@ -24,12 +24,35 @@
       backdrop-filter: blur(8px);
       border: 1px solid rgba(0,0,0,0.06);
     }
+
+    /* ✅ AGREGADO: mini tarjeta bonita para datos personales */
+    .dp-card{
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    /* ✅ AGREGADO: etiqueta (título) y valor */
+    .dp-label{
+      font-weight: 700;
+      color: #111827;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .dp-value{
+      color: #374151;
+      font-size: 14px;
+      line-height: 1.25rem;
+      word-break: break-word;
+    }
   </style>
 </head>
 
 <body class="cv-bg">
 
-<!-- ✅ CAMBIO 1: container-fluid para usar TODO el ancho -->
 <div class="container-fluid py-4 px-4">
   <div class="row g-4">
 
@@ -102,7 +125,7 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA CENTRO (MÁS ANCHA) -->
+    <!-- ✅ COLUMNA CENTRO -->
     <div class="col-12 col-md-8 col-lg-7">
       <div class="card shadow p-4 w-100 glass-card">
         <h2 class="mb-0">Mi Hoja de Vida</h2>
@@ -132,52 +155,103 @@
 
           <hr class="my-4">
 
-          <!-- ✅ DATOS -->
+          <!-- ✅✅✅ DATOS PERSONALES EN 2 COLUMNAS CON TARJETAS -->
           <div id="datos">
             <h4 class="mt-2">📌 Datos Personales</h4>
-            <ul>
-              <li><b>Cédula:</b> {{ perfil.numerocedula }}</li>
-              <li><b>Nacionalidad:</b> {{ perfil.nacionalidad }}</li>
 
-              {% if perfil.lugarnacimiento %}
-                <li><b>Lugar de nacimiento:</b> {{ perfil.lugarnacimiento }}</li>
-              {% endif %}
+            <div class="row g-3 mt-1">
+              <!-- IZQUIERDA: cédula → estado civil -->
+              <div class="col-12 col-md-6">
 
-              {% if perfil.fechanacimiento %}
-                <li><b>Fecha de nacimiento:</b> {{ perfil.fechanacimiento|date:"d/m/Y" }}</li>
-              {% endif %}
+                <div class="dp-card">
+                  <div class="dp-label">Cédula</div>
+                  <div class="dp-value">{{ perfil.numerocedula }}</div>
+                </div>
 
-              {% if perfil.sexo %}
-                <li><b>Sexo:</b> {{ perfil.get_sexo_display }}</li>
-              {% endif %}
+                <div class="dp-card">
+                  <div class="dp-label">Nacionalidad</div>
+                  <div class="dp-value">{{ perfil.nacionalidad }}</div>
+                </div>
 
-              {% if perfil.estadocivil %}
-                <li><b>Estado civil:</b> {{ perfil.estadocivil }}</li>
-              {% endif %}
+                {% if perfil.lugarnacimiento %}
+                  <div class="dp-card">
+                    <div class="dp-label">Lugar de nacimiento</div>
+                    <div class="dp-value">{{ perfil.lugarnacimiento }}</div>
+                  </div>
+                {% endif %}
 
-              {% if perfil.licenciaconducir %}
-                <li><b>Licencia de conducir:</b> {{ perfil.licenciaconducir }}</li>
-              {% endif %}
+                {% if perfil.fechanacimiento %}
+                  <div class="dp-card">
+                    <div class="dp-label">Fecha de nacimiento</div>
+                    <div class="dp-value">{{ perfil.fechanacimiento|date:"d/m/Y" }}</div>
+                  </div>
+                {% endif %}
 
-              {% if perfil.telefonoconvencional %}
-                <li><b>Teléfono convencional:</b> {{ perfil.telefonoconvencional }}</li>
-              {% endif %}
+                {% if perfil.sexo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Sexo</div>
+                    <div class="dp-value">{{ perfil.get_sexo_display }}</div>
+                  </div>
+                {% endif %}
 
-              {% if perfil.telefonofijo %}
-                <li><b>Teléfono:</b> {{ perfil.telefonofijo }}</li>
-              {% endif %}
+                {% if perfil.estadocivil %}
+                  <div class="dp-card">
+                    <div class="dp-label">Estado civil</div>
+                    <div class="dp-value">{{ perfil.estadocivil }}</div>
+                  </div>
+                {% endif %}
 
-              <li><b>Dirección:</b> {{ perfil.direcciondomiciliaria }}</li>
+              </div>
 
-              {% if perfil.direcciontrabajo %}
-                <li><b>Dirección de trabajo:</b> {{ perfil.direcciontrabajo }}</li>
-              {% endif %}
+              <!-- DERECHA: resto -->
+              <div class="col-12 col-md-6">
 
-              {% if perfil.sitioweb %}
-                <li><b>Sitio web:</b> <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a></li>
-              {% endif %}
-            </ul>
+                {% if perfil.licenciaconducir %}
+                  <div class="dp-card">
+                    <div class="dp-label">Licencia de conducir</div>
+                    <div class="dp-value">{{ perfil.licenciaconducir }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.telefonoconvencional %}
+                  <div class="dp-card">
+                    <div class="dp-label">Teléfono convencional</div>
+                    <div class="dp-value">{{ perfil.telefonoconvencional }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.telefonofijo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Teléfono</div>
+                    <div class="dp-value">{{ perfil.telefonofijo }}</div>
+                  </div>
+                {% endif %}
+
+                <div class="dp-card">
+                  <div class="dp-label">Dirección</div>
+                  <div class="dp-value">{{ perfil.direcciondomiciliaria }}</div>
+                </div>
+
+                {% if perfil.direcciontrabajo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Dirección de trabajo</div>
+                    <div class="dp-value">{{ perfil.direcciontrabajo }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.sitioweb %}
+                  <div class="dp-card">
+                    <div class="dp-label">Sitio web</div>
+                    <div class="dp-value">
+                      <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a>
+                    </div>
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
           </div>
+          <!-- ✅✅✅ FIN DATOS PERSONALES -->
 
           <!-- ✅ EXPERIENCIA -->
           <div id="experiencia">
@@ -342,7 +416,7 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA DERECHA (MÁS ANGOSTA) -->
+    <!-- ✅ COLUMNA DERECHA -->
     <div class="col-12 col-lg-2">
       <div class="card shadow-sm p-3 garage-sticky glass-card">
         <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
