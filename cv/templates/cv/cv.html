@@ -6,51 +6,82 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-  /* ✅✅✅ TARJETAS GENERALES */
-  .cv-card{
-    background: #D3D3D3 !important;
-    border: 1px solid rgba(17,24,39,0.18) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    color: #111827;
-  }
+    /* ✅ FONDO PROFESIONAL (DEGRADADO) */
+    .cv-bg{
+      background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
+      min-height: 100vh;
+    }
 
-  /* ✅✅✅ TARJETAS DE DATOS PERSONALES */
-  .dp-card{
-    background: #bdb0b0 !important;
-    border: 1px solid rgba(17,24,39,0.18);
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    color: #111827;
-  }
+    /* ✅ Card flotante a la derecha que sube y baja con scroll */
+    .garage-sticky{
+      position: sticky;
+      top: 20px;
+    }
 
-  /* ✅ textos y links para que se lean bien */
-  .dp-label{
-    font-weight: 800;
-    color: #111827;
-    font-size: 13px;
-    margin-bottom: 2px;
-    letter-spacing: .2px;
-  }
-  .dp-value{
-    color: #111827;
-    font-size: 14px;
-    line-height: 1.25rem;
-    word-break: break-word;
-  }
-  .dp-card a{
-    color:#111827 !important;
-    text-decoration: underline;
-    font-weight: 600;
-  }
-  .cv-card .text-muted,
-  .dp-card .text-muted{
-    color: rgba(17,24,39,0.75) !important;
-  }
-</style>
+    /* ✅ EFECTO "GLASS" PARA QUE SE VEA MÁS PRO */
+    .glass-card{
+      background: rgba(255,255,255,0.92) !important;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
 
+    /* ✅✅✅ COLOR PARA TODAS LAS TARJETAS (MEJORADO: texto oscuro + hover + borde suave) */
+    .cv-card{
+      background: #C1C9CF !important;
+      border: 1px solid rgba(17,24,39,0.18) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      color: #111827;
+    }
+    .cv-card:hover{
+      transform: translateY(-1px);
+      transition: .15s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+    }
+
+    /* ✅ DATOS PERSONALES: mini tarjeta */
+    .dp-card{
+      background: #C1C9CF !important;
+      border: 1px solid rgba(17,24,39,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      color: #111827;
+    }
+
+    .dp-label{
+      font-weight: 800;
+      color: #111827;
+      font-size: 13px;
+      margin-bottom: 2px;
+      letter-spacing: .2px;
+    }
+    .dp-value{
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.25rem;
+      word-break: break-word;
+    }
+
+    /* ✅ links sobre fondo gris */
+    .dp-card a{
+      color:#111827 !important;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    /* ✅ ayuda a que los textos “muted” se lean sobre #C1C9CF */
+    .cv-card .text-muted,
+    .dp-card .text-muted{
+      color: rgba(17,24,39,0.75) !important;
+    }
+
+    /* ✅ evita que el contenido se pegue al borde en móvil */
+    @media (max-width: 576px){
+      .dp-card{ padding: 12px; }
+    }
+  </style>
 </head>
 
 <body class="cv-bg">
