@@ -25,17 +25,25 @@
       border: 1px solid rgba(0,0,0,0.06);
     }
 
+    /* ✅✅✅ COLOR PARA TODAS LAS TARJETAS */
+    .cv-card{
+      background: #ACB8FF !important;
+      border: 1px solid rgba(0,0,0,0.10) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
     /* ✅ AGREGADO: mini tarjeta bonita para datos personales */
     .dp-card{
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.08);
+      background: #ACB8FF !important;  /* ✅ color pedido */
+      border: 1px solid rgba(0,0,0,0.10);
       border-radius: 12px;
       padding: 12px 14px;
       margin-bottom: 10px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     }
 
-    /* ✅ AGREGADO: etiqueta (título) y valor */
+    /* ✅ etiqueta (título) y valor */
     .dp-label{
       font-weight: 700;
       color: #111827;
@@ -43,7 +51,7 @@
       margin-bottom: 2px;
     }
     .dp-value{
-      color: #374151;
+      color: #111827;
       font-size: 14px;
       line-height: 1.25rem;
       word-break: break-word;
@@ -160,7 +168,7 @@
             <h4 class="mt-2">📌 Datos Personales</h4>
 
             <div class="row g-3 mt-1">
-              <!-- IZQUIERDA: cédula → estado civil -->
+              <!-- IZQUIERDA -->
               <div class="col-12 col-md-6">
 
                 <div class="dp-card">
@@ -203,7 +211,7 @@
 
               </div>
 
-              <!-- DERECHA: resto -->
+              <!-- DERECHA -->
               <div class="col-12 col-md-6">
 
                 {% if perfil.licenciaconducir %}
@@ -243,7 +251,9 @@
                   <div class="dp-card">
                     <div class="dp-label">Sitio web</div>
                     <div class="dp-value">
-                      <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a>
+                      <a href="{{ perfil.sitioweb }}" target="_blank" style="color:#111827; text-decoration: underline;">
+                        {{ perfil.sitioweb }}
+                      </a>
                     </div>
                   </div>
                 {% endif %}
@@ -251,14 +261,13 @@
               </div>
             </div>
           </div>
-          <!-- ✅✅✅ FIN DATOS PERSONALES -->
 
           <!-- ✅ EXPERIENCIA -->
           <div id="experiencia">
             <h4 class="mt-4">💼 Experiencia Laboral</h4>
             {% if experiencia %}
               {% for e in experiencia %}
-                <div class="border rounded p-3 mb-2 bg-white">
+                <div class="p-3 mb-2 cv-card">
                   <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
 
                   {% if e.fechainiciogestion or e.fechafingestion %}
@@ -271,7 +280,7 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
+              <div class="p-3 mb-2 cv-card">
                 <b class="text-muted">📌 No hay experiencia registrada.</b>
               </div>
             {% endif %}
@@ -282,7 +291,7 @@
             <h4 class="mt-4">📚 Cursos realizados</h4>
             {% if cursos %}
               {% for c in cursos %}
-                <div class="border rounded p-3 mb-2 bg-white">
+                <div class="p-3 mb-2 cv-card">
                   <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
 
                   {% if c.fechainicio or c.fechafin %}
@@ -295,7 +304,7 @@
 
                   {% if c.rutacertificado %}
                     <a href="{{ c.rutacertificado.url }}" target="_blank"
-                       class="btn btn-sm btn-outline-success">
+                       class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
                   {% else %}
@@ -304,7 +313,7 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
+              <div class="p-3 mb-2 cv-card">
                 <b class="text-muted">📌 No hay cursos registrados.</b>
               </div>
             {% endif %}
@@ -315,7 +324,7 @@
             <h4 class="mt-4">🏆 Reconocimientos</h4>
             {% if reconocimientos %}
               {% for r in reconocimientos %}
-                <div class="border rounded p-3 mb-2 bg-white">
+                <div class="p-3 mb-2 cv-card">
                   <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
 
                   {% if r.fechareconocimiento %}
@@ -328,7 +337,7 @@
 
                   {% if r.rutacertificado %}
                     <a href="{{ r.rutacertificado.url }}" target="_blank"
-                       class="btn btn-sm btn-outline-primary">
+                       class="btn btn-sm btn-outline-dark">
                       🏅 Ver reconocimiento
                     </a>
                   {% else %}
@@ -337,7 +346,7 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
+              <div class="p-3 mb-2 cv-card">
                 <b class="text-muted">📌 No hay reconocimientos registrados.</b>
               </div>
             {% endif %}
@@ -348,7 +357,7 @@
             <h4 class="mt-4">🎓 Productos académicos</h4>
             {% if productos_academicos %}
               {% for p in productos_academicos %}
-                <div class="border rounded p-3 mb-2 bg-white">
+                <div class="p-3 mb-2 cv-card">
                   <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
 
                   {% if p.fecharecurso %}
@@ -361,7 +370,7 @@
 
                   {% if p.rutacertificado %}
                     <a href="{{ p.rutacertificado.url }}" target="_blank"
-                       class="btn btn-sm btn-outline-success">
+                       class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
                   {% else %}
@@ -370,7 +379,7 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
+              <div class="p-3 mb-2 cv-card">
                 <b class="text-muted">📌 No hay productos académicos registrados.</b>
               </div>
             {% endif %}
@@ -381,7 +390,7 @@
             <h4 class="mt-4">💼 Productos laborales</h4>
             {% if productos_laborales %}
               {% for p in productos_laborales %}
-                <div class="border rounded p-3 mb-2 bg-white">
+                <div class="p-3 mb-2 cv-card">
                   <b>{{ p.nombreproducto }}</b>
 
                   <p class="mb-1">
@@ -394,7 +403,7 @@
 
                   {% if p.rutacertificado %}
                     <a href="{{ p.rutacertificado.url }}" target="_blank"
-                       class="btn btn-sm btn-outline-primary">
+                       class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
                   {% else %}
@@ -403,7 +412,7 @@
                 </div>
               {% endfor %}
             {% else %}
-              <div class="border rounded p-3 mb-2 bg-white">
+              <div class="p-3 mb-2 cv-card">
                 <b class="text-muted">📌 No hay productos laborales registrados.</b>
               </div>
             {% endif %}
@@ -451,4 +460,3 @@
 
 </body>
 </html>
-
