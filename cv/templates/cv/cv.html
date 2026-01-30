@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mi Hoja de Vida</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -11,21 +10,6 @@
     .cv-bg{
       background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
       min-height: 100vh;
-    }
-
-    /* ✅ margen 1 pulgada (96px) alrededor del contenido (solo pantalla) */
-    :root{ --margen-hv: 96px; }
-    .page-margin{ padding: var(--margen-hv); }
-    @media (max-width: 768px){
-      .page-margin{ padding: 16px; }
-    }
-
-    /* ✅ Para impresión: 1 pulgada real en los 4 lados */
-    @page { margin: 1in; }
-    @media print{
-      .cv-bg{ background: #fff !important; }
-      .page-margin{ padding: 0 !important; }
-      .glass-card{ background: #fff !important; box-shadow: none !important; }
     }
 
     .garage-sticky{ position: sticky; top: 20px; }
@@ -40,7 +24,7 @@
 
     /* ✅✅✅ COLOR para TODAS las tarjetas de contenido */
     .cv-card{
-      background: #D3D3D3 !important;
+      background: #D3D3D3 !important;   /* ✅ color pedido */
       border: 1px solid rgba(17,24,39,0.18) !important;
       border-radius: 14px !important;
       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
@@ -49,7 +33,7 @@
 
     /* ✅ Datos personales: mini tarjeta */
     .dp-card{
-      background: #D3D3D3 !important;
+      background: #D3D3D3 !important;   /* ✅ color pedido */
       border: 1px solid rgba(17,24,39,0.18);
       border-radius: 14px;
       padding: 12px 14px;
@@ -111,7 +95,7 @@
       font-size: 14px;
       color: rgba(15,23,42,0.75);
       margin: 0;
-      max-width: 620px;
+      max-width: 620px; /* ✅ evita que se estire demasiado */
     }
 
     /* ✅ Foto mejor */
@@ -132,15 +116,15 @@
     }
 
     /* =========================================================
-       ✅✅✅ SIDEBAR: "hoja aparte" con scroll propio
+       ✅✅✅ SIDEBAR: que sea "hoja aparte" con scroll propio
        ========================================================= */
     .sidebar-scroll{
       position: sticky;
       top: 20px;
-      max-height: calc(100vh - 40px);
+      max-height: calc(100vh - 40px); /* 20 arriba + 20 abajo */
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding-right: 6px;
+      padding-right: 6px; /* espacio para scrollbar */
     }
 
     /* Scrollbar (Chrome/Edge) */
@@ -177,382 +161,382 @@
 
 <body class="cv-bg">
 
-  <!-- ✅ margen 1 pulgada alrededor -->
-  <div class="page-margin">
+<div class="container-fluid py-4 px-4">
+  <div class="row g-4">
 
-    <div class="container-fluid py-4 px-4">
-      <div class="row g-4">
+    <!-- ✅ COLUMNA IZQUIERDA -->
+    <div class="col-12 col-md-4 col-lg-3">
+      <!-- ✅ QUITÉ sticky-top + style inline, y puse sidebar-scroll -->
+      <div class="card shadow-sm p-3 glass-card sidebar-scroll">
+        <h5 class="mb-3">✅ Secciones</h5>
 
-        <!-- ✅ COLUMNA IZQUIERDA -->
-        <div class="col-12 col-md-4 col-lg-3">
-          <div class="card shadow-sm p-3 glass-card sidebar-scroll">
-            <h5 class="mb-3">✅ Secciones</h5>
-
-            <form id="selectorForm">
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="datos" checked>
-                <label class="form-check-label">Datos personales</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="experiencia" checked>
-                <label class="form-check-label">Experiencia Laboral</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="cursos" checked>
-                <label class="form-check-label">Cursos realizados</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked id="chkReconocimientos">
-                <label class="form-check-label">Reconocimientos</label>
-              </div>
-
-              <hr>
-
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="prod_academicos" checked>
-                <label class="form-check-label">Productos académicos</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input sec" type="checkbox" value="prod_laborales" checked>
-                <label class="form-check-label">Productos laborales</label>
-              </div>
-
-              <!-- ✅ LISTA DE CERTIFICADOS -->
-              <div id="listaCertificados" class="mt-3 p-2 border rounded bg-white">
-                <small class="text-muted d-block mb-2">📄 Selecciona los certificados a imprimir (Anexos)</small>
-
-                {% if certificados %}
-                  {% for c in certificados %}
-                    <div class="form-check mb-1">
-                      <input class="form-check-input cert" type="checkbox" value="{{ c.value }}" checked id="cert-{{ forloop.counter }}">
-                      <label class="form-check-label" for="cert-{{ forloop.counter }}">
-                        <b>{{ c.nombre }}</b>
-                        <br>
-                        <small class="text-muted">
-                          {{ c.tipo }}
-                          {% if c.fecha %} - {{ c.fecha|date:"d/m/Y" }}{% endif %}
-                        </small>
-                      </label>
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <p class="text-muted mb-0" style="font-size: 13px;">No hay certificados registrados.</p>
-                {% endif %}
-              </div>
-
-              <button type="button" class="btn btn-primary w-100 mt-3" onclick="generarPDF()">
-                📄 Generar PDF con lo seleccionado
-              </button>
-            </form>
+        <form id="selectorForm">
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="datos" checked>
+            <label class="form-check-label">Datos personales</label>
           </div>
-        </div>
 
-        <!-- ✅ COLUMNA CENTRO -->
-        <div class="col-12 col-md-8 col-lg-7">
-          <div class="card shadow p-4 w-100 glass-card">
-            <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="experiencia" checked>
+            <label class="form-check-label">Experiencia Laboral</label>
+          </div>
 
-              <div style="min-width: 260px;">
-                <div class="name-title">
-                  {% if perfil %}{{ perfil.nombres }} {{ perfil.apellidos }}{% endif %}
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="cursos" checked>
+            <label class="form-check-label">Cursos realizados</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked id="chkReconocimientos">
+            <label class="form-check-label">Reconocimientos</label>
+          </div>
+
+          <hr>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="prod_academicos" checked>
+            <label class="form-check-label">Productos académicos</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input sec" type="checkbox" value="prod_laborales" checked>
+            <label class="form-check-label">Productos laborales</label>
+          </div>
+
+          <!-- ✅ LISTA DE CERTIFICADOS -->
+          <div id="listaCertificados" class="mt-3 p-2 border rounded bg-white">
+            <small class="text-muted d-block mb-2">📄 Selecciona los certificados a imprimir (Anexos)</small>
+
+            {% if certificados %}
+              {% for c in certificados %}
+                <div class="form-check mb-1">
+                  <input class="form-check-input cert" type="checkbox" value="{{ c.value }}" checked id="cert-{{ forloop.counter }}">
+                  <label class="form-check-label" for="cert-{{ forloop.counter }}">
+                    <b>{{ c.nombre }}</b>
+                    <br>
+                    <small class="text-muted">
+                      {{ c.tipo }}
+                      {% if c.fecha %} - {{ c.fecha|date:"d/m/Y" }}{% endif %}
+                    </small>
+                  </label>
                 </div>
-                <p class="subtitle">
-                  {% if perfil %}{{ perfil.descripcionperfil }}{% endif %}
-                </p>
-              </div>
-
-              {% if perfil and perfil.fotoperfil %}
-                <img src="{{ perfil.fotoperfil.url }}" alt="Foto de perfil" class="profile-pic">
-              {% else %}
-                <div class="border rounded d-flex align-items-center justify-content-center"
-                     style="width:130px;height:130px;border-radius:16px;background:#fff;">
-                  <span class="text-muted" style="font-size:12px;">Sin foto</span>
-                </div>
-              {% endif %}
-            </div>
-
-            <hr class="my-4">
-
-            {% if perfil %}
-
-              <!-- ✅ DATOS PERSONALES -->
-              <div id="datos" class="section-wrap">
-                <span class="section-pill">📌 Datos personales</span>
-
-                <div class="row g-3 mt-2">
-                  <div class="col-12 col-md-6">
-
-                    <div class="dp-card">
-                      <div class="dp-label">Cédula</div>
-                      <div class="dp-value">{{ perfil.numerocedula }}</div>
-                    </div>
-
-                    <div class="dp-card">
-                      <div class="dp-label">Nacionalidad</div>
-                      <div class="dp-value">{{ perfil.nacionalidad }}</div>
-                    </div>
-
-                    {% if perfil.lugarnacimiento %}
-                      <div class="dp-card">
-                        <div class="dp-label">Lugar de nacimiento</div>
-                        <div class="dp-value">{{ perfil.lugarnacimiento }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.fechanacimiento %}
-                      <div class="dp-card">
-                        <div class="dp-label">Fecha de nacimiento</div>
-                        <div class="dp-value">{{ perfil.fechanacimiento|date:"d/m/Y" }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.sexo %}
-                      <div class="dp-card">
-                        <div class="dp-label">Sexo</div>
-                        <div class="dp-value">{{ perfil.get_sexo_display }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.estadocivil %}
-                      <div class="dp-card">
-                        <div class="dp-label">Estado civil</div>
-                        <div class="dp-value">{{ perfil.estadocivil }}</div>
-                      </div>
-                    {% endif %}
-
-                  </div>
-
-                  <div class="col-12 col-md-6">
-
-                    {% if perfil.licenciaconducir %}
-                      <div class="dp-card">
-                        <div class="dp-label">Licencia de conducir</div>
-                        <div class="dp-value">{{ perfil.licenciaconducir }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.telefonoconvencional %}
-                      <div class="dp-card">
-                        <div class="dp-label">Teléfono convencional</div>
-                        <div class="dp-value">{{ perfil.telefonoconvencional }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.telefonofijo %}
-                      <div class="dp-card">
-                        <div class="dp-label">Teléfono</div>
-                        <div class="dp-value">{{ perfil.telefonofijo }}</div>
-                      </div>
-                    {% endif %}
-
-                    <div class="dp-card">
-                      <div class="dp-label">Dirección</div>
-                      <div class="dp-value">{{ perfil.direcciondomiciliaria }}</div>
-                    </div>
-
-                    {% if perfil.direcciontrabajo %}
-                      <div class="dp-card">
-                        <div class="dp-label">Dirección de trabajo</div>
-                        <div class="dp-value">{{ perfil.direcciontrabajo }}</div>
-                      </div>
-                    {% endif %}
-
-                    {% if perfil.sitioweb %}
-                      <div class="dp-card">
-                        <div class="dp-label">Sitio web</div>
-                        <div class="dp-value">
-                          <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a>
-                        </div>
-                      </div>
-                    {% endif %}
-
-                  </div>
-                </div>
-              </div>
-
-              <!-- ✅ EXPERIENCIA -->
-              <div id="experiencia" class="section-wrap">
-                <span class="section-pill">💼 Experiencia laboral</span>
-
-                {% if experiencia %}
-                  {% for e in experiencia %}
-                    <div class="p-3 mb-2 cv-card mt-3">
-                      <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
-
-                      {% if e.fechainiciogestion or e.fechafingestion %}
-                        <div class="text-muted small mt-1">
-                          {{ e.fechainiciogestion|date:"d/m/Y" }}{% if e.fechafingestion %} - {{ e.fechafingestion|date:"d/m/Y" }}{% endif %}
-                        </div>
-                      {% endif %}
-
-                      <p class="mb-0 mt-1">{{ e.descripcionfunciones }}</p>
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="p-3 mb-2 cv-card mt-3">
-                    <b class="text-muted">📌 No hay experiencia registrada.</b>
-                  </div>
-                {% endif %}
-              </div>
-
-              <!-- ✅ CURSOS -->
-              <div id="cursos" class="section-wrap">
-                <span class="section-pill">📚 Cursos realizados</span>
-
-                {% if cursos %}
-                  {% for c in cursos %}
-                    <div class="p-3 mb-2 cv-card mt-3">
-                      <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
-
-                      {% if c.fechainicio or c.fechafin %}
-                        <div class="text-muted small mt-1">
-                          {{ c.fechainicio|date:"d/m/Y" }}{% if c.fechafin %} - {{ c.fechafin|date:"d/m/Y" }}{% endif %}
-                        </div>
-                      {% endif %}
-
-                      <p class="mb-1 mt-1">{{ c.descripcioncurso }}</p>
-
-                      {% if c.rutacertificado %}
-                        <a href="{{ c.rutacertificado.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                          📄 Ver certificado
-                        </a>
-                      {% else %}
-                        <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="p-3 mb-2 cv-card mt-3">
-                    <b class="text-muted">📌 No hay cursos registrados.</b>
-                  </div>
-                {% endif %}
-              </div>
-
-              <!-- ✅ RECONOCIMIENTOS -->
-              <div id="reconocimientos" class="section-wrap">
-                <span class="section-pill">🏆 Reconocimientos</span>
-
-                {% if reconocimientos %}
-                  {% for r in reconocimientos %}
-                    <div class="p-3 mb-2 cv-card mt-3">
-                      <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
-
-                      {% if r.fechareconocimiento %}
-                        <div class="text-muted small mt-1">
-                          {{ r.fechareconocimiento|date:"d/m/Y" }}
-                        </div>
-                      {% endif %}
-
-                      <p class="mb-1 mt-1">{{ r.entidadpatrocinadora }}</p>
-
-                      {% if r.rutacertificado %}
-                        <a href="{{ r.rutacertificado.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                          🏅 Ver reconocimiento
-                        </a>
-                      {% else %}
-                        <p class="text-muted mb-0" style="font-size: 13px;">Sin archivo</p>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="p-3 mb-2 cv-card mt-3">
-                    <b class="text-muted">📌 No hay reconocimientos registrados.</b>
-                  </div>
-                {% endif %}
-              </div>
-
-              <!-- ✅ PRODUCTOS ACADÉMICOS -->
-              <div id="prod_academicos" class="section-wrap">
-                <span class="section-pill">🎓 Productos académicos</span>
-
-                {% if productos_academicos %}
-                  {% for p in productos_academicos %}
-                    <div class="p-3 mb-2 cv-card mt-3">
-                      <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
-
-                      {% if p.fecharecurso %}
-                        <div class="text-muted small mt-1">
-                          {{ p.fecharecurso|date:"d/m/Y" }}
-                        </div>
-                      {% endif %}
-
-                      <p class="mb-1 mt-1">{{ p.descripcion }}</p>
-
-                      {% if p.rutacertificado %}
-                        <a href="{{ p.rutacertificado.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                          📄 Ver certificado
-                        </a>
-                      {% else %}
-                        <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="p-3 mb-2 cv-card mt-3">
-                    <b class="text-muted">📌 No hay productos académicos registrados.</b>
-                  </div>
-                {% endif %}
-              </div>
-
-              <!-- ✅ PRODUCTOS LABORALES -->
-              <div id="prod_laborales" class="section-wrap">
-                <span class="section-pill">💼 Productos laborales</span>
-
-                {% if productos_laborales %}
-                  {% for p in productos_laborales %}
-                    <div class="p-3 mb-2 cv-card mt-3">
-                      <b>{{ p.nombreproducto }}</b>
-
-                      <p class="mb-1">
-                        {% if p.fechaproducto %}
-                          <small class="text-muted">{{ p.fechaproducto|date:"d/m/Y" }}</small>
-                        {% endif %}
-                      </p>
-
-                      <p class="mb-1">{{ p.descripcion }}</p>
-
-                      {% if p.rutacertificado %}
-                        <a href="{{ p.rutacertificado.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                          📄 Ver certificado
-                        </a>
-                      {% else %}
-                        <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="p-3 mb-2 cv-card mt-3">
-                    <b class="text-muted">📌 No hay productos laborales registrados.</b>
-                  </div>
-                {% endif %}
-              </div>
-
+              {% endfor %}
             {% else %}
-              <p class="text-danger">No hay datos cargados en DATOSPERSONALES 😢</p>
+              <p class="text-muted mb-0" style="font-size: 13px;">No hay certificados registrados.</p>
             {% endif %}
           </div>
-        </div>
 
-        <!-- ✅ COLUMNA DERECHA -->
-        <div class="col-12 col-lg-2">
-          <div class="card shadow-sm p-3 garage-sticky glass-card">
-            <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
-            <p class="text-muted mb-3" style="font-size: 13px;">Mira todos los productos disponibles.</p>
+          <button type="button" class="btn btn-primary w-100 mt-3" onclick="generarPDF()">
+            📄 Generar PDF con lo seleccionado
+          </button>
+        </form>
+      </div>
+    </div>
 
-            <a href="{% url 'garage_list' %}" class="btn btn-outline-primary w-100">
-              Ver productos
-            </a>
+    <!-- ✅ COLUMNA CENTRO -->
+    <div class="col-12 col-md-8 col-lg-7">
+      <div class="card shadow p-4 w-100 glass-card">
+        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+
+          <div style="min-width: 260px;">
+            <div class="name-title">
+              {% if perfil %}{{ perfil.nombres }} {{ perfil.apellidos }}{% endif %}
+            </div>
+            <p class="subtitle">
+              {% if perfil %}{{ perfil.descripcionperfil }}{% endif %}
+            </p>
           </div>
+
+          {% if perfil and perfil.fotoperfil %}
+            <img src="{{ perfil.fotoperfil.url }}" alt="Foto de perfil" class="profile-pic">
+          {% else %}
+            <div class="border rounded d-flex align-items-center justify-content-center"
+                 style="width:130px;height:130px;border-radius:16px;background:#fff;">
+              <span class="text-muted" style="font-size:12px;">Sin foto</span>
+            </div>
+          {% endif %}
         </div>
 
+        <hr class="my-4">
+
+        {% if perfil %}
+
+          <!-- ✅ DATOS PERSONALES -->
+          <div id="datos" class="section-wrap">
+            <span class="section-pill">📌 Datos personales</span>
+
+            <div class="row g-3 mt-2">
+              <div class="col-12 col-md-6">
+
+                <div class="dp-card">
+                  <div class="dp-label">Cédula</div>
+                  <div class="dp-value">{{ perfil.numerocedula }}</div>
+                </div>
+
+                <div class="dp-card">
+                  <div class="dp-label">Nacionalidad</div>
+                  <div class="dp-value">{{ perfil.nacionalidad }}</div>
+                </div>
+
+                {% if perfil.lugarnacimiento %}
+                  <div class="dp-card">
+                    <div class="dp-label">Lugar de nacimiento</div>
+                    <div class="dp-value">{{ perfil.lugarnacimiento }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.fechanacimiento %}
+                  <div class="dp-card">
+                    <div class="dp-label">Fecha de nacimiento</div>
+                    <div class="dp-value">{{ perfil.fechanacimiento|date:"d/m/Y" }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.sexo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Sexo</div>
+                    <div class="dp-value">{{ perfil.get_sexo_display }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.estadocivil %}
+                  <div class="dp-card">
+                    <div class="dp-label">Estado civil</div>
+                    <div class="dp-value">{{ perfil.estadocivil }}</div>
+                  </div>
+                {% endif %}
+
+              </div>
+
+              <div class="col-12 col-md-6">
+
+                {% if perfil.licenciaconducir %}
+                  <div class="dp-card">
+                    <div class="dp-label">Licencia de conducir</div>
+                    <div class="dp-value">{{ perfil.licenciaconducir }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.telefonoconvencional %}
+                  <div class="dp-card">
+                    <div class="dp-label">Teléfono convencional</div>
+                    <div class="dp-value">{{ perfil.telefonoconvencional }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.telefonofijo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Teléfono</div>
+                    <div class="dp-value">{{ perfil.telefonofijo }}</div>
+                  </div>
+                {% endif %}
+
+                <div class="dp-card">
+                  <div class="dp-label">Dirección</div>
+                  <div class="dp-value">{{ perfil.direcciondomiciliaria }}</div>
+                </div>
+
+                {% if perfil.direcciontrabajo %}
+                  <div class="dp-card">
+                    <div class="dp-label">Dirección de trabajo</div>
+                    <div class="dp-value">{{ perfil.direcciontrabajo }}</div>
+                  </div>
+                {% endif %}
+
+                {% if perfil.sitioweb %}
+                  <div class="dp-card">
+                    <div class="dp-label">Sitio web</div>
+                    <div class="dp-value">
+                      <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a>
+                    </div>
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ EXPERIENCIA -->
+          <div id="experiencia" class="section-wrap">
+            <span class="section-pill">💼 Experiencia laboral</span>
+
+            {% if experiencia %}
+              {% for e in experiencia %}
+                <div class="p-3 mb-2 cv-card mt-3">
+                  <b>{{ e.cargodesempenado }}</b> - {{ e.nombrempresa }}
+
+                  {% if e.fechainiciogestion or e.fechafingestion %}
+                    <div class="text-muted small mt-1">
+                      {{ e.fechainiciogestion|date:"d/m/Y" }}{% if e.fechafingestion %} - {{ e.fechafingestion|date:"d/m/Y" }}{% endif %}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-0 mt-1">{{ e.descripcionfunciones }}</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-3 mb-2 cv-card mt-3">
+                <b class="text-muted">📌 No hay experiencia registrada.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ CURSOS -->
+          <div id="cursos" class="section-wrap">
+            <span class="section-pill">📚 Cursos realizados</span>
+
+            {% if cursos %}
+              {% for c in cursos %}
+                <div class="p-3 mb-2 cv-card mt-3">
+                  <b>{{ c.nombrecurso }}</b> ({{ c.totalhoras }} horas)
+
+                  {% if c.fechainicio or c.fechafin %}
+                    <div class="text-muted small mt-1">
+                      {{ c.fechainicio|date:"d/m/Y" }}{% if c.fechafin %} - {{ c.fechafin|date:"d/m/Y" }}{% endif %}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ c.descripcioncurso }}</p>
+
+                  {% if c.rutacertificado %}
+                    <a href="{{ c.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-dark">
+                      📄 Ver certificado
+                    </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-3 mb-2 cv-card mt-3">
+                <b class="text-muted">📌 No hay cursos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ RECONOCIMIENTOS -->
+          <div id="reconocimientos" class="section-wrap">
+            <span class="section-pill">🏆 Reconocimientos</span>
+
+            {% if reconocimientos %}
+              {% for r in reconocimientos %}
+                <div class="p-3 mb-2 cv-card mt-3">
+                  <b>{{ r.tiporeconocimiento }}</b> - {{ r.descripcionreconocimiento }}
+
+                  {% if r.fechareconocimiento %}
+                    <div class="text-muted small mt-1">
+                      {{ r.fechareconocimiento|date:"d/m/Y" }}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ r.entidadpatrocinadora }}</p>
+
+                  {% if r.rutacertificado %}
+                    <a href="{{ r.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-dark">
+                      🏅 Ver reconocimiento
+                    </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin archivo</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-3 mb-2 cv-card mt-3">
+                <b class="text-muted">📌 No hay reconocimientos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ PRODUCTOS ACADÉMICOS -->
+          <div id="prod_academicos" class="section-wrap">
+            <span class="section-pill">🎓 Productos académicos</span>
+
+            {% if productos_academicos %}
+              {% for p in productos_academicos %}
+                <div class="p-3 mb-2 cv-card mt-3">
+                  <b>{{ p.nombrerecurso }}</b> - {{ p.clasificador }}
+
+                  {% if p.fecharecurso %}
+                    <div class="text-muted small mt-1">
+                      {{ p.fecharecurso|date:"d/m/Y" }}
+                    </div>
+                  {% endif %}
+
+                  <p class="mb-1 mt-1">{{ p.descripcion }}</p>
+
+                  {% if p.rutacertificado %}
+                    <a href="{{ p.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-dark">
+                      📄 Ver certificado
+                    </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-3 mb-2 cv-card mt-3">
+                <b class="text-muted">📌 No hay productos académicos registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- ✅ PRODUCTOS LABORALES -->
+          <div id="prod_laborales" class="section-wrap">
+            <span class="section-pill">💼 Productos laborales</span>
+
+            {% if productos_laborales %}
+              {% for p in productos_laborales %}
+                <div class="p-3 mb-2 cv-card mt-3">
+                  <b>{{ p.nombreproducto }}</b>
+
+                  <p class="mb-1">
+                    {% if p.fechaproducto %}
+                      <small class="text-muted">{{ p.fechaproducto|date:"d/m/Y" }}</small>
+                    {% endif %}
+                  </p>
+
+                  <p class="mb-1">{{ p.descripcion }}</p>
+
+                  {% if p.rutacertificado %}
+                    <a href="{{ p.rutacertificado.url }}" target="_blank"
+                       class="btn btn-sm btn-outline-dark">
+                      📄 Ver certificado
+                    </a>
+                  {% else %}
+                    <p class="text-muted mb-0" style="font-size: 13px;">Sin certificado</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="p-3 mb-2 cv-card mt-3">
+                <b class="text-muted">📌 No hay productos laborales registrados.</b>
+              </div>
+            {% endif %}
+          </div>
+
+        {% else %}
+          <p class="text-danger">No hay datos cargados en DATOSPERSONALES 😢</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ✅ COLUMNA DERECHA -->
+    <div class="col-12 col-lg-2">
+      <div class="card shadow-sm p-3 garage-sticky glass-card">
+        <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>
+        <p class="text-muted mb-3" style="font-size: 13px;">Mira todos los productos disponibles.</p>
+
+        <a href="{% url 'garage_list' %}" class="btn btn-outline-primary w-100">
+          Ver productos
+        </a>
       </div>
     </div>
 
   </div>
+</div>
 
 <script>
   function generarPDF(){
@@ -572,3 +556,4 @@
 
 </body>
 </html>
+
