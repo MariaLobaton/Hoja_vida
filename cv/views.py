@@ -105,7 +105,6 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ ORDEN: MÁS ACTUAL → MÁS ANTIGUO
         certificados.sort(key=lambda x: x["fecha"] or date.min, reverse=True)
 
     return render(request, "cv/cv.html", {
@@ -152,6 +151,15 @@ def cv_pdf(request):
     x_right = width - 2 * cm
     y = height - 2 * cm
 
+    # ======================================================
+    # ✅ THEME (COLORES)
+    # ======================================================
+    CARD_BG = colors.HexColor("#D3D3D3")   # ✅ color tarjetas PDF
+    PILL_BG = colors.HexColor("#D8D8D8")   # ✅ color etiqueta sección
+    BORDER = colors.HexColor("#94A3B8")
+    TEXT = colors.HexColor("#111827")
+    MUTED = colors.HexColor("#374151")
+
     # =========================
     # Helpers
     # =========================
@@ -183,6 +191,24 @@ def cv_pdf(request):
             p.showPage()
             y = height - 2 * cm
 
+    # ✅ parte palabras largas (como URLs) para que NO se salgan del cuadro
+    def split_long_word(word, font, size, max_width):
+        if stringWidth(word, font, size) <= max_width:
+            return [word]
+        parts = []
+        chunk = ""
+        for ch in word:
+            test = chunk + ch
+            if stringWidth(test, font, size) <= max_width:
+                chunk = test
+            else:
+                if chunk:
+                    parts.append(chunk)
+                chunk = ch
+        if chunk:
+            parts.append(chunk)
+        return parts
+
     def wrap_lines(text, font="Helvetica", size=10, max_width=200):
         text = safe_text(text)
         if not text:
@@ -190,13 +216,16 @@ def cv_pdf(request):
         words = text.split()
         lines, line = [], ""
         for w_ in words:
-            test = (line + " " + w_).strip()
-            if stringWidth(test, font, size) <= max_width:
-                line = test
-            else:
-                if line:
-                    lines.append(line)
-                line = w_
+            # ✅ si es una palabra enorme (URL), la partimos
+            pieces = split_long_word(w_, font, size, max_width)
+            for piece in pieces:
+                test = (line + " " + piece).strip()
+                if stringWidth(test, font, size) <= max_width:
+                    line = test
+                else:
+                    if line:
+                        lines.append(line)
+                    line = piece
         if line:
             lines.append(line)
         return lines
@@ -213,19 +242,23 @@ def cv_pdf(request):
             yy -= leading
         return yy
 
-    def draw_section_title(text):
+    # ✅ etiqueta bonita tipo “pill”
+    def draw_section_pill(title):
         nonlocal y
         nueva_pagina_si_es_necesario()
-        y -= 0.15 * cm
-        p.setFillColor(colors.HexColor("#1f2937"))
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(x_left, y, text.upper())
-        y -= 0.55 * cm
-        if text.lower() != "datos personales":
-            p.setStrokeColor(colors.HexColor("#1f2937"))
-            p.setLineWidth(1)
-            p.line(x_left, y, x_right, y)
-        y -= 0.45 * cm
+        y -= 0.2 * cm
+
+        pill_h = 0.85 * cm
+        pill_w = min(stringWidth(title.upper(), "Helvetica-Bold", 11) + 18, (x_right - x_left))
+        p.setFillColor(PILL_BG)
+        p.setStrokeColor(PILL_BG)
+        p.roundRect(x_left, y - pill_h, pill_w, pill_h, 10, fill=1, stroke=0)
+
+        p.setFillColor(TEXT)
+        p.setFont("Helvetica-Bold", 11)
+        p.drawString(x_left + 9, y - 0.62 * cm, title.upper())
+
+        y -= (pill_h + 0.55 * cm)
 
     def draw_card(title, subtitle=None, body=None):
         nonlocal y
@@ -238,16 +271,7 @@ def cv_pdf(request):
         def contar_lineas(texto, font="Helvetica", size=9, max_width=text_width):
             if not texto:
                 return 0
-            palabras = str(texto).split()
-            linea, lineas = "", 1
-            for w_ in palabras:
-                prueba = (linea + " " + w_).strip()
-                if stringWidth(prueba, font, size) <= max_width:
-                    linea = prueba
-                else:
-                    lineas += 1
-                    linea = w_
-            return lineas
+            return len(wrap_lines(texto, font=font, size=size, max_width=max_width))
 
         card_height = 10 + 16
         if subtitle:
@@ -256,20 +280,19 @@ def cv_pdf(request):
             card_height += (contar_lineas(body, "Helvetica", 9) * leading)
         card_height += 14
 
-        # ✅ Fondo blanco para buena lectura
-        p.setFillColor(colors.white)
-        p.setStrokeColor(colors.HexColor("#D1D5DB"))
-        p.roundRect(x_left, y - card_height, x_right - x_left, card_height, 10, fill=1, stroke=1)
+        p.setFillColor(CARD_BG)                 # ✅ gris #D3D3D3
+        p.setStrokeColor(BORDER)
+        p.roundRect(x_left, y - card_height, x_right - x_left, card_height, 12, fill=1, stroke=1)
 
         text_y = y - 20
 
-        p.setFillColor(colors.HexColor("#111827"))
+        p.setFillColor(TEXT)
         p.setFont("Helvetica-Bold", 11)
         p.drawString(x_left + padding, text_y, safe_text(title))
         text_y -= 14
 
         if subtitle:
-            p.setFillColor(colors.HexColor("#374151"))
+            p.setFillColor(MUTED)
             p.setFont("Helvetica", 9)
             p.drawString(x_left + padding, text_y, safe_text(subtitle))
             text_y -= 12
@@ -277,18 +300,11 @@ def cv_pdf(request):
         if body:
             p.setFillColor(colors.black)
             p.setFont("Helvetica", 9)
-            palabras = safe_text(body).split()
-            linea = ""
-            for w_ in palabras:
-                prueba = (linea + " " + w_).strip()
-                if stringWidth(prueba, "Helvetica", 9) <= text_width:
-                    linea = prueba
-                else:
-                    p.drawString(x_left + padding, text_y, linea)
-                    text_y -= leading
-                    linea = w_
-            if linea:
-                p.drawString(x_left + padding, text_y, linea)
+
+            lines = wrap_lines(body, font="Helvetica", size=9, max_width=text_width)
+            for ln in lines:
+                p.drawString(x_left + padding, text_y, ln)
+                text_y -= leading
 
         y -= (card_height + 14)
 
@@ -300,7 +316,6 @@ def cv_pdf(request):
             val_str = safe_text(val)
             if val_str and val_str.lower() != "none":
                 clean.append((label, val_str))
-
         if not clean:
             clean = [("Sin datos", "")]
 
@@ -308,7 +323,7 @@ def cv_pdf(request):
         title_h = 16
         leading = 12
         font = "Helvetica"
-        size = 10
+        size = 9
         text_w = w - 2 * padding
 
         wrapped_rows = []
@@ -328,17 +343,17 @@ def cv_pdf(request):
             y = height - 2 * cm
             y_top = y
 
-        # ✅ Fondo blanco (más contraste)
-        p.setFillColor(colors.white)
-        p.setStrokeColor(colors.HexColor("#CBD5E1"))
+        # ✅ fondo gris de tarjeta
+        p.setFillColor(CARD_BG)
+        p.setStrokeColor(BORDER)
         p.roundRect(x, y_top - card_h, w, card_h, 12, fill=1, stroke=1)
 
-        # título
-        p.setFillColor(colors.HexColor("#111827"))
+        # ✅ título
+        p.setFillColor(TEXT)
         p.setFont("Helvetica-Bold", 10)
         p.drawString(x + padding, y_top - padding - 2, safe_text(title))
 
-        # contenido
+        # ✅ contenido
         text_y = y_top - padding - title_h - 6
         p.setFillColor(colors.black)
         p.setFont(font, size)
@@ -351,7 +366,7 @@ def cv_pdf(request):
         return y_top - card_h
 
     # ======================================================
-    # ✅ ENCABEZADO (ARREGLADO)
+    # ✅ ENCABEZADO
     # ======================================================
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
@@ -359,27 +374,27 @@ def cv_pdf(request):
         p.save()
         return response
 
-    # ✅ Foto arriba a la derecha
-    foto_size = 3.8 * cm
-    foto_margin = 0.6 * cm
+    # ✅ Foto
+    foto_size = 4.0 * cm
+    foto_margin = 0.8 * cm
     foto_x = x_right - foto_size
-    foto_y = height - (2 * cm) - foto_size  # ✅ alinea con top
+    foto_y = height - (2 * cm) - foto_size
 
     hay_foto = False
     if getattr(perfil, "fotoperfil", None):
         hay_foto = draw_image_from_url(perfil.fotoperfil.url, foto_x, foto_y, foto_size, foto_size)
 
-    # ✅ Limitar el texto para que NO se meta bajo la foto
+    # ✅ header no choca con foto
     header_right_limit = (foto_x - foto_margin) if hay_foto else x_right
-    header_max_width = header_right_limit - x_left
+    header_max_width = max(200, header_right_limit - x_left)
 
-    # Nombre
-    p.setFillColor(colors.HexColor("#111827"))
-    p.setFont("Helvetica-Bold", 18)
+    # ✅ Nombre MÁS grande
+    p.setFillColor(TEXT)
+    p.setFont("Helvetica-Bold", 22)
     p.drawString(x_left, y, f"{safe_text(perfil.nombres)} {safe_text(perfil.apellidos)}")
-    y -= 18
+    y -= 22
 
-    # Descripción con wrap
+    # ✅ descripción con wrap
     desc = safe_text(getattr(perfil, "descripcionperfil", ""))
     y = draw_wrapped_at(
         x_left, y,
@@ -388,13 +403,13 @@ def cv_pdf(request):
         size=11,
         leading=14,
         max_width=header_max_width,
-        color=colors.HexColor("#4b5563")
+        color=MUTED
     )
-    y -= 8
+    y -= 10
 
-    # ✅ CLAVE: forzar que lo siguiente vaya DEBAJO de la foto (evita que se pegue)
+    # ✅ si hay foto, bajamos el contenido debajo de la foto (para que NO se pegue)
     if hay_foto:
-        limite_bajo_foto = foto_y - (0.6 * cm)
+        limite_bajo_foto = foto_y - (0.8 * cm)
         if y > limite_bajo_foto:
             y = limite_bajo_foto
 
@@ -402,7 +417,7 @@ def cv_pdf(request):
     # ✅ SECCIONES
     # ======================================================
     if "datos" in secciones:
-        draw_section_title("Datos personales")
+        draw_section_pill("Datos personales")
 
         items_left = [
             ("Cédula", getattr(perfil, "numerocedula", "")),
@@ -422,17 +437,17 @@ def cv_pdf(request):
             ("Sitio web", getattr(perfil, "sitioweb", "")),
         ]
 
-        gap = 0.6 * cm
+        gap = 0.8 * cm
         col_w = (x_right - x_left - gap) / 2
         y_top = y
 
         bottom_left = draw_info_card(x_left, y_top, col_w, "Identificación", items_left)
         bottom_right = draw_info_card(x_left + col_w + gap, y_top, col_w, "Contacto", items_right)
 
-        y = min(bottom_left, bottom_right) - (0.8 * cm)
+        y = min(bottom_left, bottom_right) - (0.9 * cm)
 
     if "experiencia" in secciones:
-        draw_section_title("Experiencia laboral")
+        draw_section_pill("Experiencia laboral")
         if experiencia:
             for e in experiencia:
                 fi = fmt_fecha(getattr(e, "fechainiciogestion", None))
@@ -458,7 +473,7 @@ def cv_pdf(request):
             draw_card("No hay experiencia registrada.")
 
     if "cursos" in secciones:
-        draw_section_title("Cursos realizados")
+        draw_section_pill("Cursos realizados")
         if cursos:
             for c in cursos:
                 fi = fmt_fecha(getattr(c, "fechainicio", None))
@@ -480,7 +495,7 @@ def cv_pdf(request):
             draw_card("No hay cursos registrados.")
 
     if "reconocimientos" in secciones:
-        draw_section_title("Reconocimientos")
+        draw_section_pill("Reconocimientos")
         if reconocimientos_cv:
             for r in reconocimientos_cv:
                 fecha_rec = fmt_fecha(getattr(r, "fechareconocimiento", None))
@@ -497,7 +512,7 @@ def cv_pdf(request):
             draw_card("No hay reconocimientos registrados.")
 
     if "prod_academicos" in secciones:
-        draw_section_title("Productos académicos")
+        draw_section_pill("Productos académicos")
         if productos_academicos:
             for pa in productos_academicos:
                 fecha_pa = fmt_fecha(getattr(pa, "fecharecurso", None))
@@ -514,7 +529,7 @@ def cv_pdf(request):
             draw_card("No hay productos académicos registrados.")
 
     if "prod_laborales" in secciones:
-        draw_section_title("Productos laborales")
+        draw_section_pill("Productos laborales")
         if productos_laborales:
             for pl in productos_laborales:
                 fecha_pl = fmt_fecha(getattr(pl, "fechaproducto", None))
@@ -575,11 +590,11 @@ def cv_pdf(request):
 
             p.showPage()
 
-            p.setFillColor(colors.HexColor("#111827"))
+            p.setFillColor(TEXT)
             p.setFont("Helvetica-Bold", 14)
             p.drawString(x_left, height - 2 * cm, f"ANEXO {contador}: CERTIFICADO")
 
-            p.setFillColor(colors.HexColor("#4b5563"))
+            p.setFillColor(MUTED)
             p.setFont("Helvetica", 10)
             p.drawString(x_left, height - 2.7 * cm, safe_text(nombre))
 
