@@ -25,36 +25,61 @@
       border: 1px solid rgba(0,0,0,0.06);
     }
 
-    /* ✅✅✅ COLOR PARA TODAS LAS TARJETAS */
+    /* ✅✅✅ COLOR PARA TODAS LAS TARJETAS (MEJORADO: texto oscuro + hover + borde suave) */
     .cv-card{
-      background: #ACB8FF !important;
-      border: 1px solid rgba(0,0,0,0.10) !important;
-      border-radius: 12px !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      background: #C1C9CF !important;
+      border: 1px solid rgba(17,24,39,0.18) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      color: #111827;
+    }
+    .cv-card:hover{
+      transform: translateY(-1px);
+      transition: .15s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.10);
     }
 
-    /* ✅ AGREGADO: mini tarjeta bonita para datos personales */
+    /* ✅ DATOS PERSONALES: mini tarjeta */
     .dp-card{
-      background: #ACB8FF !important;  /* ✅ color pedido */
-      border: 1px solid rgba(0,0,0,0.10);
-      border-radius: 12px;
+      background: #C1C9CF !important;
+      border: 1px solid rgba(17,24,39,0.18);
+      border-radius: 14px;
       padding: 12px 14px;
       margin-bottom: 10px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      color: #111827;
     }
 
-    /* ✅ etiqueta (título) y valor */
     .dp-label{
-      font-weight: 700;
+      font-weight: 800;
       color: #111827;
       font-size: 13px;
       margin-bottom: 2px;
+      letter-spacing: .2px;
     }
     .dp-value{
       color: #111827;
       font-size: 14px;
       line-height: 1.25rem;
       word-break: break-word;
+    }
+
+    /* ✅ links sobre fondo gris */
+    .dp-card a{
+      color:#111827 !important;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    /* ✅ ayuda a que los textos “muted” se lean sobre #C1C9CF */
+    .cv-card .text-muted,
+    .dp-card .text-muted{
+      color: rgba(17,24,39,0.75) !important;
+    }
+
+    /* ✅ evita que el contenido se pegue al borde en móvil */
+    @media (max-width: 576px){
+      .dp-card{ padding: 12px; }
     }
   </style>
 </head>
@@ -163,7 +188,7 @@
 
           <hr class="my-4">
 
-          <!-- ✅✅✅ DATOS PERSONALES EN 2 COLUMNAS CON TARJETAS -->
+          <!-- ✅ DATOS PERSONALES EN 2 COLUMNAS CON TARJETAS -->
           <div id="datos">
             <h4 class="mt-2">📌 Datos Personales</h4>
 
@@ -251,7 +276,7 @@
                   <div class="dp-card">
                     <div class="dp-label">Sitio web</div>
                     <div class="dp-value">
-                      <a href="{{ perfil.sitioweb }}" target="_blank" style="color:#111827; text-decoration: underline;">
+                      <a href="{{ perfil.sitioweb }}" target="_blank">
                         {{ perfil.sitioweb }}
                       </a>
                     </div>
@@ -460,3 +485,4 @@
 
 </body>
 </html>
+
