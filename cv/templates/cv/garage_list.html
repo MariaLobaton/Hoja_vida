@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    /* ✅ IMÁGENES MÁS GRANDES Y QUE SE VEAN COMPLETAS */
+    /* IMÁGENES MÁS GRANDES Y QUE SE VEAN COMPLETAS */
     .card-img-top{
       height: 220px;
       width: 100%;
@@ -16,7 +16,7 @@
       padding: 8px;
     }
 
-    /* ✅ para indicar que la imagen se puede dar clic */
+    /* para indicar que la imagen se puede dar clic */
     .img-click{
       cursor: pointer;
       transition: transform .2s ease;
@@ -30,7 +30,7 @@
       letter-spacing: .3px;
     }
 
-    /* ✅ CUADRITO DEL PRECIO */
+    /* CUADRITO DEL PRECIO */
     .price-tag{
       background: #2b2f33;
       padding: 6px 12px;
@@ -65,7 +65,7 @@
 
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-4">
-    <!-- ✅ Volver a la izquierda -->
+    <!-- Volver a la izquierda -->
     <a href="{% url 'cv_view' %}" class="btn btn-outline-primary">
       ← Volver
     </a>
@@ -86,7 +86,7 @@
           <div class="card shadow-sm border-0 h-100 overflow-hidden">
 
             {% if p.fotoproducto %}
-              <!-- ✅ Imagen clickeable -->
+              <!--  Imagen clickeable -->
               <img
                 src="{{ p.fotoproducto.url }}"
                 class="card-img-top img-click"
@@ -95,7 +95,7 @@
                 data-bs-target="#modalImg{{ p.idventagarage }}"
               >
 
-              <!-- ✅ Modal Imagen grande -->
+              <!-- Modal Imagen grande -->
               <div class="modal fade" id="modalImg{{ p.idventagarage }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
                   <div class="modal-content">
@@ -124,18 +124,18 @@
 
             <div class="card-body">
 
-              <!-- ✅ Nombre + Precio -->
+              <!-- Nombre + Precio -->
               <div class="d-flex align-items-start justify-content-between">
                 <h5 class="card-title mb-1">{{ p.nombreproducto }}</h5>
 
-                <!-- ✅ PRECIO -->
+                <!-- PRECIO -->
                 <div class="price-tag">
                   <span class="price-symbol">$</span>
                   <span class="price-value">{{ p.valordelbien|floatformat:"2" }}</span>
                 </div>
               </div>
 
-              <!-- ✅ Fecha publicación (si existe) -->
+              <!--  Fecha publicación (si existe) -->
               {% if p.fecha_publicacion %}
                 <small class="text-muted d-block mt-1">
                   📅 Publicado: {{ p.fecha_publicacion|date:"d/m/Y H:i" }}
@@ -144,7 +144,7 @@
 
               <div class="d-flex gap-2 align-items-center mb-2 mt-2">
 
-                <!-- ✅ CONDICIÓN -->
+                <!-- CONDICIÓN -->
                 {% if p.condicion == "Bueno" %}
                   <span class="badge badge-estado bg-success">BUENO</span>
                 {% elif p.condicion == "Regular" %}
@@ -153,7 +153,7 @@
                   <span class="badge badge-estado bg-secondary">{{ p.condicion }}</span>
                 {% endif %}
 
-                <!-- ✅ DISPONIBLE / VENDIDO -->
+                <!--  DISPONIBLE / VENDIDO -->
                 <span class="badge badge-estado bg-info text-dark">
                   {{ p.estadoproducto }}
                 </span>
@@ -163,7 +163,7 @@
                 {{ p.descripcion }}
               </p>
 
-              <!-- ✅ WHATSAPP FIJO -->
+              <!--  WHATSAPP FIJO -->
               {% with whatsapp_number="593978716097" %}
                 {% with precio_txt=p.valordelbien|stringformat:"s" %}
                   {% with msg="Hola, estoy interesado en el producto: "|add:p.nombreproducto|add:" (Precio: $"|add:precio_txt|add:"). ¿Sigue disponible?" %}
@@ -192,7 +192,7 @@
 
 </div>
 
-<!-- ✅ Bootstrap JS -->
+<!--  Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

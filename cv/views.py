@@ -18,10 +18,7 @@ from .models import (
 )
 from .forms import DatosPersonalesForm
 
-
-# ======================================================
-# ✅ VISTA PARA EDITAR PERFIL
-# ======================================================
+#  VISTA PARA EDITAR PERFIL
 def editar_perfil(request):
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
@@ -38,11 +35,8 @@ def editar_perfil(request):
 
     return render(request, "cv/editar_perfil.html", {"form": form, "perfil": perfil})
 
-
-# ======================================================
-# ✅ VISTA NORMAL HTML
-# ✅ Lista de CERTIFICADOS (Cursos + Reconocimientos + Productos)
-# ======================================================
+# VISTA NORMAL HTML
+# Lista de CERTIFICADOS (Cursos + Reconocimientos + Productos)
 def cv_view(request):
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 
@@ -66,13 +60,13 @@ def cv_view(request):
             activarparaqueseveaenfront=True
         ).exclude(estadoproducto="Vendido")
 
-        # ✅ CERTIFICADOS DE CURSOS
+        #  CERTIFICADOS DE CURSOS
         for c in cursos:
             if getattr(c, "rutacertificado", None):
                 fecha = getattr(c, "fechafin", None) or getattr(c, "fechainicio", None)
                 certificados.append({"value": f"CUR-{c.pk}", "nombre": c.nombrecurso, "tipo": "Curso", "fecha": fecha})
 
-        # ✅ CERTIFICADOS DE RECONOCIMIENTOS
+        # CERTIFICADOS DE RECONOCIMIENTOS
         for r in reconocimientos:
             if getattr(r, "rutacertificado", None):
                 fecha = getattr(r, "fechareconocimiento", None)
@@ -83,7 +77,7 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ CERTIFICADOS DE PRODUCTOS ACADÉMICOS
+        # CERTIFICADOS DE PRODUCTOS ACADÉMICOS
         for pa in productos_academicos:
             if getattr(pa, "rutacertificado", None):
                 fecha = getattr(pa, "fecharecurso", None)
@@ -94,7 +88,7 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ CERTIFICADOS DE PRODUCTOS LABORALES
+        # CERTIFICADOS DE PRODUCTOS LABORALES
         for pl in productos_laborales:
             if getattr(pl, "rutacertificado", None):
                 fecha = getattr(pl, "fechaproducto", None)
@@ -119,9 +113,7 @@ def cv_view(request):
     })
 
 
-# ======================================================
-# ✅ PDF (REPORTLAB) + ANEXOS CERTIFICADOS
-# ======================================================
+# PDF (REPORTLAB) + ANEXOS CERTIFICADOS
 def cv_pdf(request):
     secciones = request.GET.getlist("sec")
     certificados_tokens = request.GET.getlist("cert")
@@ -147,23 +139,20 @@ def cv_pdf(request):
     p = canvas.Canvas(response, pagesize=letter)
     width, height = letter
 
-    # ✅ márgenes del PDF
+    # márgenes del PDF
     x_left = 2 * cm
     x_right = width - 2 * cm
     y = height - 2 * cm
 
-    # ======================================================
-    # ✅ THEME (COLORES)
-    # ======================================================
+    #  THEME (COLORES)
     CARD_BG = colors.HexColor("#D3D3D3")
     PILL_BG = colors.HexColor("#D8D8D8")
     BORDER = colors.HexColor("#94A3B8")
     TEXT = colors.HexColor("#111827")
     MUTED = colors.HexColor("#374151")
 
-    # =========================
+    
     # Helpers
-    # =========================
     def fmt_fecha(d):
         if not d:
             return ""
@@ -241,7 +230,7 @@ def cv_pdf(request):
             yy -= leading
         return yy
 
-    # ✅ PILL + LÍNEA SEPARADORA (para que NO desaparezca la línea)
+    #  PILL + LÍNEA SEPARADORA (para que NO desaparezca la línea)
     def draw_section_pill(title):
         nonlocal y
         nueva_pagina_si_es_necesario()
@@ -258,7 +247,7 @@ def cv_pdf(request):
         p.setFont("Helvetica-Bold", 11)
         p.drawString(x_left + 9, y - 0.62 * cm, pill_text)
 
-        # ✅ línea separadora
+        # línea separadora
         line_y = (y - pill_h) - 0.25 * cm
         p.setStrokeColor(TEXT)
         p.setLineWidth(1)
@@ -365,16 +354,14 @@ def cv_pdf(request):
 
         return y_top - card_h
 
-    # ======================================================
-    # ✅ ENCABEZADO
-    # ======================================================
+    #  ENCABEZADO
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
         p.drawString(x_left, y, "No existe un perfil activo.")
         p.save()
         return response
 
-    # ✅ Foto
+    # Foto
     foto_size = 4.0 * cm
     foto_margin = 0.8 * cm
     foto_x = x_right - foto_size
@@ -387,8 +374,8 @@ def cv_pdf(request):
     header_right_limit = (foto_x - foto_margin) if hay_foto else x_right
     header_max_width = max(200, header_right_limit - x_left)
 
-    # ✅✅✅ AQUÍ BAJAMOS NOMBRE + DESCRIPCIÓN
-    y -= (1.2 * cm)  # ⬅️ ajusta: 1.0, 1.5, 2.0 según te guste
+    #  AQUÍ BAJAMOS NOMBRE + DESCRIPCIÓN
+    y -= (1.2 * cm)  # ⬅ ajusta: 1.0, 1.5, 2.0 según te guste
 
     p.setFillColor(TEXT)
     p.setFont("Helvetica-Bold", 22)
@@ -412,9 +399,7 @@ def cv_pdf(request):
         if y > limite_bajo_foto:
             y = limite_bajo_foto
 
-    # ======================================================
-    # ✅ SECCIONES
-    # ======================================================
+    # SECCIONES
     if "datos" in secciones:
         draw_section_pill("Datos personales")
 
@@ -540,9 +525,7 @@ def cv_pdf(request):
         else:
             draw_card("No hay productos laborales registrados.")
 
-    # ======================================================
-    # ✅ ANEXOS
-    # ======================================================
+    # ANEXOS
     if certificados_tokens:
         contador = 1
 
@@ -637,9 +620,9 @@ def cv_pdf(request):
     return response
 
 
-# ======================================================
-# ✅ PÁGINA APARTE: GARAGE BONITO
-# ======================================================
+
+#  PÁGINA APARTE: GARAGE BONITO
+
 def garage_list(request):
     perfil = DatosPersonales.objects.filter(perfilactivo=1).first()
 

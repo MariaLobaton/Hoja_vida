@@ -7,10 +7,10 @@
 
   <style>
     :root{
-      --margen-hv: 2cm; /* ✅ margen interno 2cm en los 4 lados */
+      --margen-hv: 2cm; /* margen interno 2cm en los 4 lados */
     }
 
-    /* ✅ Fondo */
+    /*  Fondo */
     .cv-bg{
       background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
       min-height: 100vh;
@@ -18,7 +18,7 @@
 
     .garage-sticky{ position: sticky; top: 20px; }
 
-    /* ✅ contenedores blancos estilo glass */
+    /* contenedores blancos estilo glass */
     .glass-card{
       background: rgba(255,255,255,0.92) !important;
       backdrop-filter: blur(8px);
@@ -26,18 +26,18 @@
       border-radius: 16px;
     }
 
-    /* ✅✅✅ COLOR para TODAS las tarjetas de contenido */
+    /* COLOR para TODAS las tarjetas de contenido */
     .cv-card{
-      background: #D3D3D3 !important;   /* ✅ color pedido */
+      background: #D3D3D3 !important;   /* color pedido */
       border: 1px solid rgba(17,24,39,0.18) !important;
       border-radius: 14px !important;
       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
       color: #111827;
     }
 
-    /* ✅ Datos personales: mini tarjeta */
+    /*  Datos personales: mini tarjeta */
     .dp-card{
-      background: #D3D3D3 !important;   /* ✅ color pedido */
+      background: #D3D3D3 !important;   /*  color pedido */
       border: 1px solid rgba(17,24,39,0.18);
       border-radius: 14px;
       padding: 12px 14px;
@@ -64,10 +64,10 @@
       color:#111827 !important;
       text-decoration: underline;
       font-weight: 700;
-      word-break: break-all; /* ✅ para que URLs no se salgan */
+      word-break: break-all; /*  para que URLs no se salgan */
     }
 
-    /* ✅ Etiquetas bonitas tipo “pill” */
+    /*  Etiquetas bonitas tipo “pill” */
     .section-pill{
       display: inline-flex;
       align-items: center;
@@ -88,7 +88,7 @@
       margin-bottom: 12px;
     }
 
-    /* ✅ Nombre más grande */
+    /*  Nombre más grande */
     .name-title{
       font-size: 34px;
       line-height: 1.05;
@@ -100,10 +100,10 @@
       font-size: 14px;
       color: rgba(15,23,42,0.75);
       margin: 0;
-      max-width: 620px; /* ✅ evita que se estire demasiado */
+      max-width: 620px; /*  evita que se estire demasiado */
     }
 
-    /* ✅ Foto mejor */
+    /* Foto mejor */
     .profile-pic{
       width: 130px;
       height: 130px;
@@ -114,25 +114,23 @@
       flex: 0 0 auto;
     }
 
-    /* ✅ mejora lectura de text-muted sobre tarjetas grises */
+    /* mejora lectura de text-muted sobre tarjetas grises */
     .cv-card .text-muted,
     .dp-card .text-muted{
       color: rgba(17,24,39,0.75) !important;
     }
 
-    /* ✅✅✅ margen interno del CV (2cm en los 4 lados) */
+    /*  margen interno del CV (2cm en los 4 lados) */
     .page-margin{
       padding: var(--margen-hv) !important;
     }
 
-    /* ✅ al imprimir desde navegador (CTRL+P) */
+    /*  al imprimir desde navegador (CTRL+P) */
     @page{
       margin: 2cm;
     }
 
-    /* =========================================================
-       ✅✅✅ SIDEBAR: "hoja aparte" con scroll propio
-       ========================================================= */
+    /* SIDEBAR: "hoja aparte" con scroll propio*/
     .sidebar-scroll{
       position: sticky;
       top: 20px;
@@ -162,7 +160,7 @@
       scrollbar-color: rgba(17,24,39,0.35) rgba(0,0,0,0.06);
     }
 
-    /* ✅ en móvil no tiene sentido sticky */
+    /* en móvil no tiene sentido sticky */
     @media (max-width: 767.98px){
       .sidebar-scroll{
         position: static;
@@ -171,7 +169,7 @@
         padding-right: 0;
       }
       .page-margin{
-        padding: 18px !important; /* ✅ en móvil se ve mejor que 2cm */
+        padding: 18px !important; /*  en móvil se ve mejor que 2cm */
       }
     }
   </style>
@@ -182,7 +180,7 @@
 <div class="container-fluid py-4 px-4">
   <div class="row g-4">
 
-    <!-- ✅ COLUMNA IZQUIERDA -->
+    <!--  COLUMNA IZQUIERDA -->
     <div class="col-12 col-md-4 col-lg-3">
       <div class="card shadow-sm p-3 glass-card sidebar-scroll">
         <h5 class="mb-3">✅ Secciones</h5>
@@ -220,7 +218,7 @@
             <label class="form-check-label" for="sec-pl">Productos laborales</label>
           </div>
 
-          <!-- ✅ LISTA DE CERTIFICADOS -->
+          <!--  LISTA DE CERTIFICADOS -->
           <div id="listaCertificados" class="mt-3 p-2 border rounded bg-white">
             <small class="text-muted d-block mb-2">📄 Selecciona los certificados a imprimir (Anexos)</small>
 
@@ -250,9 +248,9 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA CENTRO -->
+    <!--  COLUMNA CENTRO -->
     <div class="col-12 col-md-8 col-lg-7">
-      <!-- ✅ IMPORTANTE: quitamos p-4 y ponemos page-margin (2cm) -->
+      <!--  IMPORTANTE: quitamos p-4 y ponemos page-margin (2cm) -->
       <div class="card shadow w-100 glass-card page-margin">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
 
@@ -279,7 +277,7 @@
 
         {% if perfil %}
 
-          <!-- ✅ DATOS PERSONALES -->
+          <!--  DATOS PERSONALES -->
           <div id="datos" class="section-wrap">
             <span class="section-pill">📌 Datos personales</span>
 
@@ -376,7 +374,7 @@
             </div>
           </div>
 
-          <!-- ✅ EXPERIENCIA -->
+          <!--  EXPERIENCIA -->
           <div id="experiencia" class="section-wrap">
             <span class="section-pill">💼 Experiencia laboral</span>
 
@@ -401,7 +399,7 @@
             {% endif %}
           </div>
 
-          <!-- ✅ CURSOS -->
+          <!-- CURSOS -->
           <div id="cursos" class="section-wrap">
             <span class="section-pill">📚 Cursos realizados</span>
 
@@ -435,7 +433,7 @@
             {% endif %}
           </div>
 
-          <!-- ✅ RECONOCIMIENTOS -->
+          <!--  RECONOCIMIENTOS -->
           <div id="reconocimientos" class="section-wrap">
             <span class="section-pill">🏆 Reconocimientos</span>
 
@@ -469,7 +467,7 @@
             {% endif %}
           </div>
 
-          <!-- ✅ PRODUCTOS ACADÉMICOS -->
+          <!--  PRODUCTOS ACADÉMICOS -->
           <div id="prod_academicos" class="section-wrap">
             <span class="section-pill">🎓 Productos académicos</span>
 
@@ -503,7 +501,7 @@
             {% endif %}
           </div>
 
-          <!-- ✅ PRODUCTOS LABORALES -->
+          <!--  PRODUCTOS LABORALES -->
           <div id="prod_laborales" class="section-wrap">
             <span class="section-pill">💼 Productos laborales</span>
 
@@ -543,7 +541,7 @@
       </div>
     </div>
 
-    <!-- ✅ COLUMNA DERECHA -->
+    <!--  COLUMNA DERECHA -->
     <div class="col-12 col-lg-2">
       <div class="card shadow-sm p-3 garage-sticky glass-card">
         <h6 class="fw-bold mb-2">🛒 Venta de garage</h6>

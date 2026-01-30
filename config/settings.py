@@ -8,24 +8,24 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# ✅ Cargar variables del .env (solo local)
+# Cargar variables del .env (solo local)
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ✅ SECRET KEY
+# SECRET KEY
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-i5%#q45(&lrdi0@=2n^o_3@nyjwq*d+@&4jx+pi7w-#1v2zajt"
 )
 
-# ✅ DEBUG
+# DEBUG
 DEBUG = os.environ.get("DEBUG", "0").lower() in ("1", "true", "yes")
 
-# ✅ Render hostname automático
+# Render hostname automático
 RENDER_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
-# ✅ ALLOWED_HOSTS
+# ALLOWED_HOSTS
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
@@ -35,14 +35,12 @@ if RENDER_HOST:
 if DEBUG:
     ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
 
-# ✅ CSRF para Render
+# CSRF para Render
 CSRF_TRUSTED_ORIGINS = []
 if RENDER_HOST:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOST}")
 
-# ==========================================================
-# ✅ Apps
-# ==========================================================
+#  Apps
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -51,19 +49,17 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # ✅ Cloudinary (MEDIA en Render Free)
+    # Cloudinary (MEDIA en Render Free)
     "cloudinary_storage",
     "cloudinary",
 
     "cv",
 ]
 
-# ==========================================================
-# ✅ Middleware
-# ==========================================================
+#  Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ static en Render
+    "whitenoise.middleware.WhiteNoiseMiddleware",  #  static en Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -91,13 +87,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# ==========================================================
-# ✅ DATABASE
-# ==========================================================
+#  DATABASE
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    # ✅ SQLite local
+    #  SQLite local
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -112,10 +106,8 @@ else:
             ssl_require=True,
         )
     }
+# Password validation
 
-# ==========================================================
-# ✅ Password validation
-# ==========================================================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -123,37 +115,31 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# ==========================================================
-# ✅ Internationalization
-# ==========================================================
+#  Internationalization
 LANGUAGE_CODE = "es-ec"
 TIME_ZONE = "America/Guayaquil"
 USE_I18N = True
 USE_TZ = True
 
-# ==========================================================
-# ✅ Static files
-# ==========================================================
+# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ==========================================================
-# ✅ CLOUDINARY (MEDIA)
-# ==========================================================
-# ✅ Cloudinary configurado con variables de entorno
+# CLOUDINARY (MEDIA)
+# Cloudinary configurado con variables de entorno
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
     "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
 }
 
-# ✅ IMPORTANTE (Django 6): STORAGES reemplaza DEFAULT_FILE_STORAGE y STATICFILES_STORAGE
+# IMPORTANTE (Django 6): STORAGES reemplaza DEFAULT_FILE_STORAGE y STATICFILES_STORAGE
 STORAGES = {
-    # ✅ TODO lo que subas (ImageField/FileField) se va a Cloudinary
+    # TODO lo que subas (ImageField/FileField) se va a Cloudinary
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
-    # ✅ Static files con WhiteNoise
+    # Static files con WhiteNoise
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -161,9 +147,7 @@ STORAGES = {
 
 MEDIA_URL = "/media/"
 
-# ✅ Solo local (por si pruebas en tu PC)
+#  Solo local (por si pruebas en tu PC)
 if DEBUG:
     MEDIA_ROOT = BASE_DIR / "media"
-
-# ==========================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
