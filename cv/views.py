@@ -129,7 +129,6 @@ def cv_view(request):
                 })
 
         # ✅ ✅ ✅ ORDEN: MÁS ACTUAL → MÁS ANTIGUO (None al final)
-        # (None queda como date.min y al ordenar descendente queda al final)
         certificados.sort(key=lambda x: x["fecha"] or date.min, reverse=True)
 
     return render(request, "cv/cv.html", {
@@ -190,7 +189,7 @@ def cv_pdf(request):
     # ✅ FUNCIONES PDF
     # ======================================================
 
-    # ✅ AGREGADO: formateo dd/mm/YYYY para cualquier date
+    # ✅ formateo dd/mm/YYYY
     def fmt_fecha(d):
         if not d:
             return ""
@@ -198,6 +197,95 @@ def cv_pdf(request):
             return d.strftime("%d/%m/%Y")
         except:
             return str(d)
+
+    # ✅✅✅ AGREGADO: wrap y tarjetas en 2 columnas (para Datos Personales)
+    def wrap_lines(text, font="Helvetica", size=9, max_width=200):
+        if text is None:
+            text = ""
+        text = str(text).strip()
+        if not text:
+            return []
+        words = text.split()
+        lines = []
+        line = ""
+        for w in words:
+            test = (line + " " + w).strip()
+            if stringWidth(test, font, size) <= max_width:
+                line = test
+            else:
+                if line:
+                    lines.append(line)
+                line = w
+        if line:
+            lines.append(line)
+        return lines
+
+    def draw_info_card(x, y_top, w, title, items, min_y=3 * cm):
+        """
+        Tarjeta bonita (gris claro) con lista de (label, value).
+        Devuelve el y_final (parte baja de la tarjeta).
+        """
+        nonlocal y
+
+        # Quitar vacíos
+        clean = []
+        for label, val in items:
+            if val is None:
+                continue
+            val_str = str(val).strip()
+            if val_str == "" or val_str.lower() == "none":
+                continue
+            clean.append((label, val_str))
+
+        if not clean:
+            clean = [("Sin datos", "")]
+
+        padding = 12
+        title_h = 16
+        leading = 12
+        font = "Helvetica"
+        size = 9
+        text_w = w - 2 * padding
+
+        total_lines = 0
+        wrapped_rows = []
+        for label, val in clean:
+            row_text = f"{label}: {val}"
+            lines = wrap_lines(row_text, font=font, size=size, max_width=text_w)
+            if not lines:
+                lines = [row_text]
+            wrapped_rows.append(lines)
+            total_lines += len(lines)
+
+        card_h = padding + title_h + 8 + (total_lines * leading) + padding
+
+        # salto si no entra
+        if (y_top - card_h) < min_y:
+            p.showPage()
+            y = height - 2 * cm
+            y_top = y
+
+        # caja
+        p.setFillColor(colors.HexColor("#F3F4F6"))
+        p.setStrokeColor(colors.HexColor("#D1D5DB"))
+        p.roundRect(x, y_top - card_h, w, card_h, 10, fill=1, stroke=1)
+
+        # titulo
+        p.setFillColor(colors.HexColor("#111827"))
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(x + padding, y_top - padding - 2, title)
+
+        # texto
+        text_y = y_top - padding - title_h - 6
+        p.setFillColor(colors.black)
+        p.setFont(font, size)
+
+        for lines in wrapped_rows:
+            for ln in lines:
+                p.drawString(x + padding, text_y, ln)
+                text_y -= leading
+
+        return y_top - card_h
 
     def draw_image_from_url(img_url, x, y_pos, w, h):
         try:
@@ -363,55 +451,46 @@ def cv_pdf(request):
     y -= 25
 
     # ======================================================
-    # ✅ ORDEN FIJO DEL PDF (como tu hoja de vida)
+    # ✅ ORDEN FIJO DEL PDF
     # ======================================================
     if "datos" in secciones:
         draw_section_title("Datos personales")
 
-        # ✅ básicos
-        draw_wrapped_text(f"Cédula: {perfil.numerocedula}", size=10)
-        draw_wrapped_text(f"Nacionalidad: {perfil.nacionalidad}", size=10)
+        # ✅ IZQUIERDA (Cédula → Estado civil)
+        items_left = [
+            ("Cédula", getattr(perfil, "numerocedula", "")),
+            ("Nacionalidad", getattr(perfil, "nacionalidad", "")),
+            ("Lugar de nacimiento", getattr(perfil, "lugarnacimiento", "")),
+            ("Fecha de nacimiento", fmt_fecha(getattr(perfil, "fechanacimiento", None))),
+            ("Sexo", perfil.get_sexo_display() if getattr(perfil, "sexo", None) else ""),
+            ("Estado civil", getattr(perfil, "estadocivil", "")),
+        ]
 
-        # ✅ AGREGADO: resto de datos (sin repetir nombres/apellidos aquí)
-        if getattr(perfil, "lugarnacimiento", None):
-            draw_wrapped_text(f"Lugar de nacimiento: {perfil.lugarnacimiento}", size=10)
+        # ✅ DERECHA (resto)
+        items_right = [
+            ("Licencia de conducir", getattr(perfil, "licenciaconducir", "")),
+            ("Teléfono convencional", getattr(perfil, "telefonoconvencional", "")),
+            ("Teléfono", getattr(perfil, "telefonofijo", "")),
+            ("Dirección domicilio", getattr(perfil, "direcciondomiciliaria", "")),
+            ("Dirección trabajo", getattr(perfil, "direcciontrabajo", "")),
+            ("Sitio web", getattr(perfil, "sitioweb", "")),
+        ]
 
-        if getattr(perfil, "fechanacimiento", None):
-            draw_wrapped_text(f"Fecha de nacimiento: {fmt_fecha(perfil.fechanacimiento)}", size=10)
+        # ✅ 2 columnas
+        gap = 0.6 * cm
+        col_w = (x_right - x_left - gap) / 2
+        y_top = y
 
-        if getattr(perfil, "sexo", None):
-            try:
-                draw_wrapped_text(f"Sexo: {perfil.get_sexo_display()}", size=10)
-            except:
-                draw_wrapped_text(f"Sexo: {perfil.sexo}", size=10)
+        bottom_left = draw_info_card(x_left, y_top, col_w, "Identificación", items_left)
+        bottom_right = draw_info_card(x_left + col_w + gap, y_top, col_w, "Contacto", items_right)
 
-        if getattr(perfil, "estadocivil", None):
-            draw_wrapped_text(f"Estado civil: {perfil.estadocivil}", size=10)
-
-        if getattr(perfil, "licenciaconducir", None):
-            draw_wrapped_text(f"Licencia de conducir: {perfil.licenciaconducir}", size=10)
-
-        if getattr(perfil, "telefonoconvencional", None):
-            draw_wrapped_text(f"Teléfono convencional: {perfil.telefonoconvencional}", size=10)
-
-        if getattr(perfil, "telefonofijo", None):
-            draw_wrapped_text(f"Teléfono: {perfil.telefonofijo}", size=10)
-
-        # ✅ direcciones
-        draw_wrapped_text(f"Dirección domicilio: {perfil.direcciondomiciliaria}", size=10)
-
-        if getattr(perfil, "direcciontrabajo", None):
-            draw_wrapped_text(f"Dirección trabajo: {perfil.direcciontrabajo}", size=10)
-
-        # ✅ web
-        if getattr(perfil, "sitioweb", None):
-            draw_wrapped_text(f"Sitio web: {perfil.sitioweb}", size=10)
+        # ✅ bajar y para continuar
+        y = min(bottom_left, bottom_right) - (0.8 * cm)
 
     if "experiencia" in secciones:
         draw_section_title("Experiencia laboral")
         if experiencia:
             for e in experiencia:
-                # ✅ fechas experiencia al subtitle (dd/mm/YYYY)
                 fi = fmt_fecha(getattr(e, "fechainiciogestion", None))
                 ff = fmt_fecha(getattr(e, "fechafingestion", None))
                 rango = ""
@@ -438,7 +517,6 @@ def cv_pdf(request):
         draw_section_title("Cursos realizados")
         if cursos:
             for c in cursos:
-                # ✅ fechas curso con formato dd/mm/YYYY
                 fi = fmt_fecha(getattr(c, "fechainicio", None))
                 ff = fmt_fecha(getattr(c, "fechafin", None))
                 sub = ""
@@ -505,7 +583,7 @@ def cv_pdf(request):
             draw_card("No hay productos laborales registrados.")
 
     # ======================================================
-    # ✅ ANEXOS: CADA CERTIFICADO SELECCIONADO EN HOJA NUEVA
+    # ✅ ANEXOS
     # ======================================================
     if certificados_tokens:
         contador = 1
@@ -524,28 +602,24 @@ def cv_pdf(request):
             nombre = ""
             url_cert = None
 
-            # ✅ CURSOS
             if tipo == "CUR":
                 obj = CursosRealizados.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = obj.nombrecurso
                     url_cert = obj.rutacertificado.url
 
-            # ✅ RECONOCIMIENTOS
             elif tipo == "REC":
                 obj = Reconocimientos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.tiporeconocimiento} - {obj.descripcionreconocimiento}"
                     url_cert = obj.rutacertificado.url
 
-            # ✅ PRODUCTOS ACADÉMICOS
             elif tipo == "PA":
                 obj = ProductosAcademicos.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
                     nombre = f"{obj.nombrerecurso} - {obj.clasificador}"
                     url_cert = obj.rutacertificado.url
 
-            # ✅ PRODUCTOS LABORALES
             elif tipo == "PL":
                 obj = ProductosLaborales.objects.filter(pk=idx, perfil=perfil).first()
                 if obj and getattr(obj, "rutacertificado", None):
@@ -568,7 +642,6 @@ def cv_pdf(request):
             y_temp = height - 4.0 * cm
 
             try:
-                # ✅ Solo imágenes
                 if url_cert.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                     with urlopen(url_cert, timeout=7) as response_img:
                         image_bytes = response_img.read()
@@ -588,7 +661,6 @@ def cv_pdf(request):
                     y_img = (height - new_h) / 2 - 0.8 * cm
 
                     p.drawImage(img, x_img, y_img, width=new_w, height=new_h, mask="auto")
-
                 else:
                     p.setFillColor(colors.red)
                     p.setFont("Helvetica-Bold", 11)
@@ -596,7 +668,6 @@ def cv_pdf(request):
                     p.setFillColor(colors.black)
                     p.setFont("Helvetica", 10)
                     p.drawString(x_left, y_temp - 18, "Convierte el PDF a PNG/JPG para que se imprima.")
-
             except:
                 p.setFillColor(colors.red)
                 p.setFont("Helvetica-Bold", 11)
