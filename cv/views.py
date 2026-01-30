@@ -216,7 +216,6 @@ def cv_pdf(request):
         words = text.split()
         lines, line = [], ""
         for w_ in words:
-            # ✅ si es una palabra enorme (URL), la partimos
             pieces = split_long_word(w_, font, size, max_width)
             for piece in pieces:
                 test = (line + " " + piece).strip()
@@ -242,23 +241,32 @@ def cv_pdf(request):
             yy -= leading
         return yy
 
-    # ✅ etiqueta bonita tipo “pill”
+    # ✅✅✅ ETIQUETA BONITA + LÍNEA SEPARADORA (AQUÍ ESTABA EL ERROR)
     def draw_section_pill(title):
         nonlocal y
         nueva_pagina_si_es_necesario()
         y -= 0.2 * cm
 
         pill_h = 0.85 * cm
-        pill_w = min(stringWidth(title.upper(), "Helvetica-Bold", 11) + 18, (x_right - x_left))
+        pill_text = safe_text(title).upper()
+        pill_w = min(stringWidth(pill_text, "Helvetica-Bold", 11) + 18, (x_right - x_left))
+
+        # pill
         p.setFillColor(PILL_BG)
-        p.setStrokeColor(PILL_BG)
         p.roundRect(x_left, y - pill_h, pill_w, pill_h, 10, fill=1, stroke=0)
 
         p.setFillColor(TEXT)
         p.setFont("Helvetica-Bold", 11)
-        p.drawString(x_left + 9, y - 0.62 * cm, title.upper())
+        p.drawString(x_left + 9, y - 0.62 * cm, pill_text)
 
-        y -= (pill_h + 0.55 * cm)
+        # ✅ línea separadora debajo del pill
+        line_y = (y - pill_h) - 0.25 * cm
+        p.setStrokeColor(TEXT)
+        p.setLineWidth(1)
+        p.line(x_left, line_y, x_right, line_y)
+
+        # bajar para continuar contenido
+        y = line_y - 0.55 * cm
 
     def draw_card(title, subtitle=None, body=None):
         nonlocal y
@@ -280,7 +288,7 @@ def cv_pdf(request):
             card_height += (contar_lineas(body, "Helvetica", 9) * leading)
         card_height += 14
 
-        p.setFillColor(CARD_BG)                 # ✅ gris #D3D3D3
+        p.setFillColor(CARD_BG)
         p.setStrokeColor(BORDER)
         p.roundRect(x_left, y - card_height, x_right - x_left, card_height, 12, fill=1, stroke=1)
 
@@ -300,7 +308,6 @@ def cv_pdf(request):
         if body:
             p.setFillColor(colors.black)
             p.setFont("Helvetica", 9)
-
             lines = wrap_lines(body, font="Helvetica", size=9, max_width=text_width)
             for ln in lines:
                 p.drawString(x_left + padding, text_y, ln)
@@ -343,17 +350,14 @@ def cv_pdf(request):
             y = height - 2 * cm
             y_top = y
 
-        # ✅ fondo gris de tarjeta
         p.setFillColor(CARD_BG)
         p.setStrokeColor(BORDER)
         p.roundRect(x, y_top - card_h, w, card_h, 12, fill=1, stroke=1)
 
-        # ✅ título
         p.setFillColor(TEXT)
         p.setFont("Helvetica-Bold", 10)
         p.drawString(x + padding, y_top - padding - 2, safe_text(title))
 
-        # ✅ contenido
         text_y = y_top - padding - title_h - 6
         p.setFillColor(colors.black)
         p.setFont(font, size)
@@ -384,17 +388,14 @@ def cv_pdf(request):
     if getattr(perfil, "fotoperfil", None):
         hay_foto = draw_image_from_url(perfil.fotoperfil.url, foto_x, foto_y, foto_size, foto_size)
 
-    # ✅ header no choca con foto
     header_right_limit = (foto_x - foto_margin) if hay_foto else x_right
     header_max_width = max(200, header_right_limit - x_left)
 
-    # ✅ Nombre MÁS grande
     p.setFillColor(TEXT)
     p.setFont("Helvetica-Bold", 22)
     p.drawString(x_left, y, f"{safe_text(perfil.nombres)} {safe_text(perfil.apellidos)}")
     y -= 22
 
-    # ✅ descripción con wrap
     desc = safe_text(getattr(perfil, "descripcionperfil", ""))
     y = draw_wrapped_at(
         x_left, y,
@@ -407,7 +408,6 @@ def cv_pdf(request):
     )
     y -= 10
 
-    # ✅ si hay foto, bajamos el contenido debajo de la foto (para que NO se pegue)
     if hay_foto:
         limite_bajo_foto = foto_y - (0.8 * cm)
         if y > limite_bajo_foto:
@@ -658,3 +658,4 @@ def garage_list(request):
         "productos": productos,
         "whatsapp_number": whatsapp_number,
     })
+
