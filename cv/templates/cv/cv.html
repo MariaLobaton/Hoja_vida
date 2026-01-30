@@ -100,7 +100,7 @@
       font-size: 14px;
       color: rgba(15,23,42,0.75);
       margin: 0;
-      max-width: 620px; /* ✅ evita que se estire demasiado */
+      max-width: 620px;
     }
 
     /* ✅ Foto mejor */
@@ -125,6 +125,11 @@
       padding: var(--margen-hv) !important;
     }
 
+    /* ✅ Baja el bloque (Nombre + descripción) juntos */
+    .header-block{
+      padding-top: 18px; /* ajusta: 12px / 18px / 24px */
+    }
+
     /* ✅ al imprimir desde navegador (CTRL+P) */
     @page{
       margin: 2cm;
@@ -136,10 +141,10 @@
     .sidebar-scroll{
       position: sticky;
       top: 20px;
-      max-height: calc(100vh - 40px); /* 20 arriba + 20 abajo */
+      max-height: calc(100vh - 40px);
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding-right: 6px; /* espacio para scrollbar */
+      padding-right: 6px;
     }
 
     /* Scrollbar (Chrome/Edge) */
@@ -171,7 +176,7 @@
         padding-right: 0;
       }
       .page-margin{
-        padding: 18px !important; /* ✅ en móvil se ve mejor que 2cm */
+        padding: 18px !important; /* en móvil se ve mejor que 2cm */
       }
     }
   </style>
@@ -256,7 +261,8 @@
       <div class="card shadow w-100 glass-card page-margin">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
 
-          <div style="min-width: 260px;">
+          <!-- ✅ baja nombre + descripción juntos -->
+          <div class="header-block" style="min-width: 260px;">
             <div class="name-title">
               {% if perfil %}{{ perfil.nombres }} {{ perfil.apellidos }}{% endif %}
             </div>
