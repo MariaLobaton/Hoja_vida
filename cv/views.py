@@ -147,6 +147,7 @@ def cv_pdf(request):
     p = canvas.Canvas(response, pagesize=letter)
     width, height = letter
 
+    # ✅ márgenes del PDF
     x_left = 2 * cm
     x_right = width - 2 * cm
     y = height - 2 * cm
@@ -154,8 +155,8 @@ def cv_pdf(request):
     # ======================================================
     # ✅ THEME (COLORES)
     # ======================================================
-    CARD_BG = colors.HexColor("#D3D3D3")   # ✅ color tarjetas PDF
-    PILL_BG = colors.HexColor("#D8D8D8")   # ✅ color etiqueta sección
+    CARD_BG = colors.HexColor("#D3D3D3")
+    PILL_BG = colors.HexColor("#D8D8D8")
     BORDER = colors.HexColor("#94A3B8")
     TEXT = colors.HexColor("#111827")
     MUTED = colors.HexColor("#374151")
@@ -168,7 +169,7 @@ def cv_pdf(request):
             return ""
         try:
             return d.strftime("%d/%m/%Y")
-        except:
+        except Exception:
             return str(d)
 
     def safe_text(t):
@@ -182,7 +183,7 @@ def cv_pdf(request):
             img = ImageReader(image_file)
             p.drawImage(img, x, y_pos, width=w, height=h, mask="auto")
             return True
-        except:
+        except Exception:
             return False
 
     def nueva_pagina_si_es_necesario(min_y=3 * cm):
@@ -191,7 +192,6 @@ def cv_pdf(request):
             p.showPage()
             y = height - 2 * cm
 
-    # ✅ parte palabras largas (como URLs) para que NO se salgan del cuadro
     def split_long_word(word, font, size, max_width):
         if stringWidth(word, font, size) <= max_width:
             return [word]
@@ -241,7 +241,7 @@ def cv_pdf(request):
             yy -= leading
         return yy
 
-    # ✅✅✅ ETIQUETA BONITA + LÍNEA SEPARADORA (AQUÍ ESTABA EL ERROR)
+    # ✅ PILL + LÍNEA SEPARADORA (para que NO desaparezca la línea)
     def draw_section_pill(title):
         nonlocal y
         nueva_pagina_si_es_necesario()
@@ -251,7 +251,6 @@ def cv_pdf(request):
         pill_text = safe_text(title).upper()
         pill_w = min(stringWidth(pill_text, "Helvetica-Bold", 11) + 18, (x_right - x_left))
 
-        # pill
         p.setFillColor(PILL_BG)
         p.roundRect(x_left, y - pill_h, pill_w, pill_h, 10, fill=1, stroke=0)
 
@@ -259,13 +258,12 @@ def cv_pdf(request):
         p.setFont("Helvetica-Bold", 11)
         p.drawString(x_left + 9, y - 0.62 * cm, pill_text)
 
-        # ✅ línea separadora debajo del pill
+        # ✅ línea separadora
         line_y = (y - pill_h) - 0.25 * cm
         p.setStrokeColor(TEXT)
         p.setLineWidth(1)
         p.line(x_left, line_y, x_right, line_y)
 
-        # bajar para continuar contenido
         y = line_y - 0.55 * cm
 
     def draw_card(title, subtitle=None, body=None):
@@ -337,9 +335,7 @@ def cv_pdf(request):
         total_lines = 0
         for label, val in clean:
             row_text = f"{label}: {val}"
-            lines = wrap_lines(row_text, font=font, size=size, max_width=text_w)
-            if not lines:
-                lines = [row_text]
+            lines = wrap_lines(row_text, font=font, size=size, max_width=text_w) or [row_text]
             wrapped_rows.append(lines)
             total_lines += len(lines)
 
@@ -390,6 +386,9 @@ def cv_pdf(request):
 
     header_right_limit = (foto_x - foto_margin) if hay_foto else x_right
     header_max_width = max(200, header_right_limit - x_left)
+
+    # ✅✅✅ AQUÍ BAJAMOS NOMBRE + DESCRIPCIÓN
+    y -= (1.2 * cm)  # ⬅️ ajusta: 1.0, 1.5, 2.0 según te guste
 
     p.setFillColor(TEXT)
     p.setFont("Helvetica-Bold", 22)
@@ -555,7 +554,7 @@ def cv_pdf(request):
             tipo, idx = token.split("-", 1)
             try:
                 idx = int(idx)
-            except:
+            except Exception:
                 continue
 
             nombre = ""
@@ -627,7 +626,7 @@ def cv_pdf(request):
                     p.setFillColor(colors.black)
                     p.setFont("Helvetica", 10)
                     p.drawString(x_left, y_temp - 18, "Convierte el PDF a PNG/JPG para que se imprima.")
-            except:
+            except Exception:
                 p.setFillColor(colors.red)
                 p.setFont("Helvetica-Bold", 11)
                 p.drawString(x_left, y_temp, "❌ Error al cargar el certificado.")
@@ -658,4 +657,3 @@ def garage_list(request):
         "productos": productos,
         "whatsapp_number": whatsapp_number,
     })
-
