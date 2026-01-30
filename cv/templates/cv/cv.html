@@ -6,6 +6,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
+    :root{
+      --margen-hv: 2cm; /* ✅ margen interno 2cm en los 4 lados */
+    }
+
     /* ✅ Fondo */
     .cv-bg{
       background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);
@@ -60,6 +64,7 @@
       color:#111827 !important;
       text-decoration: underline;
       font-weight: 700;
+      word-break: break-all; /* ✅ para que URLs no se salgan */
     }
 
     /* ✅ Etiquetas bonitas tipo “pill” */
@@ -115,8 +120,18 @@
       color: rgba(17,24,39,0.75) !important;
     }
 
+    /* ✅✅✅ margen interno del CV (2cm en los 4 lados) */
+    .page-margin{
+      padding: var(--margen-hv) !important;
+    }
+
+    /* ✅ al imprimir desde navegador (CTRL+P) */
+    @page{
+      margin: 2cm;
+    }
+
     /* =========================================================
-       ✅✅✅ SIDEBAR: que sea "hoja aparte" con scroll propio
+       ✅✅✅ SIDEBAR: "hoja aparte" con scroll propio
        ========================================================= */
     .sidebar-scroll{
       position: sticky;
@@ -147,13 +162,16 @@
       scrollbar-color: rgba(17,24,39,0.35) rgba(0,0,0,0.06);
     }
 
-    /* ✅ en móvil no tiene sentido sticky, que sea normal */
+    /* ✅ en móvil no tiene sentido sticky */
     @media (max-width: 767.98px){
       .sidebar-scroll{
         position: static;
         max-height: none;
         overflow: visible;
         padding-right: 0;
+      }
+      .page-margin{
+        padding: 18px !important; /* ✅ en móvil se ve mejor que 2cm */
       }
     }
   </style>
@@ -166,41 +184,40 @@
 
     <!-- ✅ COLUMNA IZQUIERDA -->
     <div class="col-12 col-md-4 col-lg-3">
-      <!-- ✅ QUITÉ sticky-top + style inline, y puse sidebar-scroll -->
       <div class="card shadow-sm p-3 glass-card sidebar-scroll">
         <h5 class="mb-3">✅ Secciones</h5>
 
         <form id="selectorForm">
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="datos" checked>
-            <label class="form-check-label">Datos personales</label>
+            <input class="form-check-input sec" type="checkbox" value="datos" checked id="sec-datos">
+            <label class="form-check-label" for="sec-datos">Datos personales</label>
           </div>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="experiencia" checked>
-            <label class="form-check-label">Experiencia Laboral</label>
+            <input class="form-check-input sec" type="checkbox" value="experiencia" checked id="sec-exp">
+            <label class="form-check-label" for="sec-exp">Experiencia Laboral</label>
           </div>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="cursos" checked>
-            <label class="form-check-label">Cursos realizados</label>
+            <input class="form-check-input sec" type="checkbox" value="cursos" checked id="sec-cursos">
+            <label class="form-check-label" for="sec-cursos">Cursos realizados</label>
           </div>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked id="chkReconocimientos">
-            <label class="form-check-label">Reconocimientos</label>
+            <input class="form-check-input sec" type="checkbox" value="reconocimientos" checked id="sec-rec">
+            <label class="form-check-label" for="sec-rec">Reconocimientos</label>
           </div>
 
           <hr>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="prod_academicos" checked>
-            <label class="form-check-label">Productos académicos</label>
+            <input class="form-check-input sec" type="checkbox" value="prod_academicos" checked id="sec-pa">
+            <label class="form-check-label" for="sec-pa">Productos académicos</label>
           </div>
 
           <div class="form-check">
-            <input class="form-check-input sec" type="checkbox" value="prod_laborales" checked>
-            <label class="form-check-label">Productos laborales</label>
+            <input class="form-check-input sec" type="checkbox" value="prod_laborales" checked id="sec-pl">
+            <label class="form-check-label" for="sec-pl">Productos laborales</label>
           </div>
 
           <!-- ✅ LISTA DE CERTIFICADOS -->
@@ -235,7 +252,8 @@
 
     <!-- ✅ COLUMNA CENTRO -->
     <div class="col-12 col-md-8 col-lg-7">
-      <div class="card shadow p-4 w-100 glass-card">
+      <!-- ✅ IMPORTANTE: quitamos p-4 y ponemos page-margin (2cm) -->
+      <div class="card shadow w-100 glass-card page-margin">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
 
           <div style="min-width: 260px;">
@@ -347,7 +365,9 @@
                   <div class="dp-card">
                     <div class="dp-label">Sitio web</div>
                     <div class="dp-value">
-                      <a href="{{ perfil.sitioweb }}" target="_blank">{{ perfil.sitioweb }}</a>
+                      <a href="{{ perfil.sitioweb }}" target="_blank" rel="noopener">
+                        {{ perfil.sitioweb }}
+                      </a>
                     </div>
                   </div>
                 {% endif %}
@@ -399,7 +419,7 @@
                   <p class="mb-1 mt-1">{{ c.descripcioncurso }}</p>
 
                   {% if c.rutacertificado %}
-                    <a href="{{ c.rutacertificado.url }}" target="_blank"
+                    <a href="{{ c.rutacertificado.url }}" target="_blank" rel="noopener"
                        class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
@@ -433,7 +453,7 @@
                   <p class="mb-1 mt-1">{{ r.entidadpatrocinadora }}</p>
 
                   {% if r.rutacertificado %}
-                    <a href="{{ r.rutacertificado.url }}" target="_blank"
+                    <a href="{{ r.rutacertificado.url }}" target="_blank" rel="noopener"
                        class="btn btn-sm btn-outline-dark">
                       🏅 Ver reconocimiento
                     </a>
@@ -467,7 +487,7 @@
                   <p class="mb-1 mt-1">{{ p.descripcion }}</p>
 
                   {% if p.rutacertificado %}
-                    <a href="{{ p.rutacertificado.url }}" target="_blank"
+                    <a href="{{ p.rutacertificado.url }}" target="_blank" rel="noopener"
                        class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
@@ -501,7 +521,7 @@
                   <p class="mb-1">{{ p.descripcion }}</p>
 
                   {% if p.rutacertificado %}
-                    <a href="{{ p.rutacertificado.url }}" target="_blank"
+                    <a href="{{ p.rutacertificado.url }}" target="_blank" rel="noopener"
                        class="btn btn-sm btn-outline-dark">
                       📄 Ver certificado
                     </a>
