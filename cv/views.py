@@ -105,7 +105,7 @@ def cv_view(request):
                     "fecha": fecha
                 })
 
-        # ✅ ORDEN: MÁS ACTUAL → MÁS ANTIGUO (None al final)
+        # ✅ ORDEN: MÁS ACTUAL → MÁS ANTIGUO
         certificados.sort(key=lambda x: x["fecha"] or date.min, reverse=True)
 
     return render(request, "cv/cv.html", {
@@ -202,9 +202,6 @@ def cv_pdf(request):
         return lines
 
     def draw_wrapped_at(x, y_top, text, font="Helvetica", size=10, leading=14, max_width=200, color=colors.black):
-        """
-        Dibuja texto con wrap en (x,y_top). Devuelve el nuevo y (más abajo).
-        """
         if not text:
             return y_top
         lines = wrap_lines(text, font=font, size=size, max_width=max_width)
@@ -259,7 +256,7 @@ def cv_pdf(request):
             card_height += (contar_lineas(body, "Helvetica", 9) * leading)
         card_height += 14
 
-        # ✅ Fondo blanco para mejor lectura en PDF
+        # ✅ Fondo blanco para buena lectura
         p.setFillColor(colors.white)
         p.setStrokeColor(colors.HexColor("#D1D5DB"))
         p.roundRect(x_left, y - card_height, x_right - x_left, card_height, 10, fill=1, stroke=1)
@@ -296,10 +293,6 @@ def cv_pdf(request):
         y -= (card_height + 14)
 
     def draw_info_card(x, y_top, w, title, items, min_y=3 * cm):
-        """
-        Tarjeta en 2 columnas para Datos Personales.
-        Retorna el y_final (parte baja).
-        """
         nonlocal y
 
         clean = []
@@ -315,7 +308,7 @@ def cv_pdf(request):
         title_h = 16
         leading = 12
         font = "Helvetica"
-        size = 10  # ✅ un poquito más grande para que se lea mejor
+        size = 10
         text_w = w - 2 * padding
 
         wrapped_rows = []
@@ -335,7 +328,7 @@ def cv_pdf(request):
             y = height - 2 * cm
             y_top = y
 
-        # ✅ Fondo blanco + borde para que contraste
+        # ✅ Fondo blanco (más contraste)
         p.setFillColor(colors.white)
         p.setStrokeColor(colors.HexColor("#CBD5E1"))
         p.roundRect(x, y_top - card_h, w, card_h, 12, fill=1, stroke=1)
@@ -358,7 +351,7 @@ def cv_pdf(request):
         return y_top - card_h
 
     # ======================================================
-    # ✅ ENCABEZADO
+    # ✅ ENCABEZADO (ARREGLADO)
     # ======================================================
     if not perfil:
         p.setFont("Helvetica-Bold", 14)
@@ -366,26 +359,27 @@ def cv_pdf(request):
         p.save()
         return response
 
-    # ✅ Foto
+    # ✅ Foto arriba a la derecha
     foto_size = 3.8 * cm
     foto_margin = 0.6 * cm
     foto_x = x_right - foto_size
-    foto_y = height - (2 * cm) - foto_size  # ✅ alineada con el top real
+    foto_y = height - (2 * cm) - foto_size  # ✅ alinea con top
 
     hay_foto = False
     if getattr(perfil, "fotoperfil", None):
         hay_foto = draw_image_from_url(perfil.fotoperfil.url, foto_x, foto_y, foto_size, foto_size)
 
-    # ✅ El texto del header no debe meterse donde está la foto
+    # ✅ Limitar el texto para que NO se meta bajo la foto
     header_right_limit = (foto_x - foto_margin) if hay_foto else x_right
     header_max_width = header_right_limit - x_left
 
+    # Nombre
     p.setFillColor(colors.HexColor("#111827"))
     p.setFont("Helvetica-Bold", 18)
     p.drawString(x_left, y, f"{safe_text(perfil.nombres)} {safe_text(perfil.apellidos)}")
     y -= 18
 
-    # ✅ descripción con WRAP y sin chocar con la foto
+    # Descripción con wrap
     desc = safe_text(getattr(perfil, "descripcionperfil", ""))
     y = draw_wrapped_at(
         x_left, y,
@@ -398,7 +392,7 @@ def cv_pdf(request):
     )
     y -= 8
 
-    # ✅ IMPORTANTÍSIMO: si hay foto, forzamos que lo siguiente empiece debajo de la foto
+    # ✅ CLAVE: forzar que lo siguiente vaya DEBAJO de la foto (evita que se pegue)
     if hay_foto:
         limite_bajo_foto = foto_y - (0.6 * cm)
         if y > limite_bajo_foto:
